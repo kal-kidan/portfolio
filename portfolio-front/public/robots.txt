@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+Allow: /home
+
+Sitemap: https://YOUR_DOMAIN/sitemap.xml

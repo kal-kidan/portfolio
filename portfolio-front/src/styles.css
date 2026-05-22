@@ -1,0 +1,31 @@
+@import 'tailwindcss';
+
+/* Sampled from kals-portofolio-os.png edges (top #020102 → bottom #1a0c08) */
+:root {
+  --portfolio-bg-top: #020102;
+  --portfolio-bg-bottom: #1a0c08;
+  --portfolio-bg: linear-gradient(
+    180deg,
+    var(--portfolio-bg-top) 0%,
+    var(--portfolio-bg-bottom) 100%
+  );
+}
+
+@layer base {
+  html {
+    font-family:
+      'Inter',
+      system-ui,
+      -apple-system,
+      sans-serif;
+    background: var(--portfolio-bg);
+    background-color: var(--portfolio-bg-top);
+  }
+
+  body {
+    min-height: 100dvh;
+    overflow-x: hidden;
+    background: var(--portfolio-bg);
+    background-color: var(--portfolio-bg-top);
+  }
+}

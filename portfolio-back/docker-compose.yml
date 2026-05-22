@@ -1,0 +1,30 @@
+version: '3.9'
+
+services:
+  mongo:
+    image: mongo:7
+    container_name: portfolio-mongo
+    ports:
+      - '27017:27017'
+    volumes:
+      - mongo-data:/data/db
+    environment:
+      - MONGO_INITDB_DATABASE=${MONGODB_DB_NAME:-${DB_NAME:-portfolio}}
+
+  app:
+    build: .
+    image: portfolio-back
+    depends_on:
+      - mongo
+    env_file:
+      - .env
+    environment:
+      - NODE_ENV=production
+      - PORT=${PORT:-8080}
+      - MONGODB_DB_NAME=${MONGODB_DB_NAME:-${DB_NAME:-portfolio}}
+      - MONGODB_URI=mongodb://mongo:27017
+    ports:
+      - '8080:8080'
+
+volumes:
+  mongo-data:

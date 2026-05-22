@@ -1,0 +1,168 @@
+.portfolio-os-page {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: var(--portfolio-bg);
+  background-color: var(--portfolio-bg-top);
+  padding: 0.75rem;
+  gap: 0.75rem;
+}
+
+.portfolio-os-scene {
+  position: relative;
+  width: min(100%, calc(100dvh * 1.7778));
+  max-height: calc(100dvh - 3rem);
+  aspect-ratio: 1672 / 941;
+  background: var(--portfolio-bg);
+  background-color: var(--portfolio-bg-top);
+  user-select: none;
+  touch-action: none;
+}
+
+.portfolio-os-scene__bg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+  pointer-events: none;
+}
+
+.portfolio-os-scene--inserting .portfolio-os-scene__bg {
+  animation: portfolio-os-flicker 0.45s ease-in-out;
+}
+
+@keyframes portfolio-os-flicker {
+  0%,
+  100% {
+    filter: brightness(1);
+  }
+  25% {
+    filter: brightness(1.35) contrast(1.05);
+  }
+  50% {
+    filter: brightness(0.85);
+  }
+  75% {
+    filter: brightness(1.2);
+  }
+}
+
+.portfolio-os-hotspot {
+  position: absolute;
+  box-sizing: border-box;
+}
+
+.portfolio-os-disk {
+  cursor: grab;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  background: transparent;
+  padding: 0;
+  z-index: 2;
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.portfolio-os-disk:focus-visible {
+  outline: 2px solid #a78bfa;
+  outline-offset: 2px;
+}
+
+.portfolio-os-disk:hover {
+  border-color: rgba(167, 139, 250, 0.55);
+  box-shadow: 0 0 12px rgba(139, 92, 246, 0.45);
+}
+
+.portfolio-os-disk--dragging {
+  cursor: grabbing;
+  z-index: 30;
+  border-color: rgba(250, 204, 21, 0.85);
+  box-shadow: 0 0 18px rgba(250, 204, 21, 0.55);
+}
+
+.portfolio-os-disk__label {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.portfolio-os-drop {
+  z-index: 1;
+  border: 2px dashed transparent;
+  border-radius: 4px;
+  transition:
+    border-color 0.15s ease,
+    background-color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.portfolio-os-drop--active {
+  border-color: rgba(74, 222, 128, 0.85);
+  background: rgba(74, 222, 128, 0.12);
+  box-shadow: inset 0 0 20px rgba(74, 222, 128, 0.25);
+}
+
+.portfolio-os-drop--over {
+  border-color: rgba(250, 204, 21, 0.95);
+  background: rgba(250, 204, 21, 0.15);
+  box-shadow: inset 0 0 24px rgba(250, 204, 21, 0.35);
+}
+
+.portfolio-os-drag-overlay {
+  border-radius: 50%;
+  border: 2px solid rgba(250, 204, 21, 0.9);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
+  background: rgba(88, 28, 135, 0.45);
+  cursor: grabbing;
+}
+
+.portfolio-os-status {
+  position: absolute;
+  left: 50%;
+  bottom: 2%;
+  transform: translateX(-50%);
+  z-index: 5;
+  font-family: ui-monospace, 'Courier New', monospace;
+  font-size: clamp(0.65rem, 1.6vw, 0.8rem);
+  color: #86efac;
+  text-shadow: 0 0 8px rgba(34, 197, 94, 0.6);
+  pointer-events: none;
+  white-space: nowrap;
+}
+
+.portfolio-os-fallback {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.5rem 1rem;
+  font-family: ui-monospace, monospace;
+  font-size: 0.75rem;
+}
+
+.portfolio-os-fallback a {
+  color: #c4b5fd;
+  text-decoration: none;
+}
+
+.portfolio-os-fallback a:hover {
+  color: #fde047;
+  text-decoration: underline;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .portfolio-os-scene--inserting .portfolio-os-scene__bg {
+    animation: none;
+    filter: brightness(1.1);
+  }
+}
