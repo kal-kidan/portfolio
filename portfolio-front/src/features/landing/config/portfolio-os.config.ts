@@ -1,4 +1,31 @@
 import sceneImage from '@/assets/home/kals-portofolio-os.png';
+import type { PanInfo } from 'framer-motion';
+
+/**
+ * --------------------------------
+ * SOURCE IMAGE
+ * --------------------------------
+ *
+ * kals-portofolio-os.png
+ * 1672 × 941
+ *
+ * All coordinates below are based on
+ * source-image pixels.
+ */
+
+export const SCENE_WIDTH = 1672;
+export const SCENE_HEIGHT = 941;
+export const SCENE_ASPECT = SCENE_WIDTH / SCENE_HEIGHT;
+
+export const SCENE_IMAGE = sceneImage;
+
+export const INSERT_DELAY_MS = 450;
+
+/**
+ * --------------------------------
+ * DISK TYPES
+ * --------------------------------
+ */
 
 export type DiskId =
   | 'bio'
@@ -8,6 +35,21 @@ export type DiskId =
   | 'contact'
   | 'resume';
 
+export const SHELF_DISK_ORDER: readonly DiskId[] = [
+  'bio',
+  'experience',
+  'projects',
+  'skills',
+  'contact',
+  'resume',
+] as const;
+
+/**
+ * --------------------------------
+ * SCENE RECT
+ * --------------------------------
+ */
+
 export type SceneRect = {
   left: number;
   top: number;
@@ -15,105 +57,326 @@ export type SceneRect = {
   height: number;
 };
 
+/**
+ * --------------------------------
+ * PORTFOLIO DISK
+ * --------------------------------
+ */
+
 export type PortfolioDisk = {
   id: DiskId;
-  label: string;
+  shelfIndex: number;
+  discLabel: string;
+  screenLabel: string;
   tagline: string;
   route: string;
-  /** Position on the scene image (percent, 0–100) */
-  position: SceneRect;
+  color: string;
 };
 
-/** Scene asset — kals-portofolio-os.png (1672×941) */
-export const SCENE_WIDTH = 1672;
-export const SCENE_HEIGHT = 941;
-export const SCENE_ASPECT = SCENE_WIDTH / SCENE_HEIGHT;
-export const SCENE_IMAGE = sceneImage;
+/**
+ * --------------------------------
+ * DISK HITBOXES
+ * --------------------------------
+ *
+ * Source image coordinates.
+ *
+ * These are NOT percentages.
+ * They scale dynamically at runtime.
+ */
 
-export const INSERT_DELAY_MS = 450;
+export type DiskHitbox = {
+  id: DiskId;
+  left: number;
+  top: number;
+  width: number;
+  height: number;
 
-/** Monitor icons — 2×3 grid on screen */
-export const PORTFOLIO_DISKS: PortfolioDisk[] = [
+  /**
+   * Center point
+   * Used for smooth nearest-disk snapping
+   */
+  centerX: number;
+  centerY: number;
+};
+
+export const DISK_HITBOXES: readonly DiskHitbox[] = [
   {
     id: 'bio',
-    label: 'Bio',
-    tagline: 'Get to know me',
-    route: '/bio',
-    position: { left: 35.2, top: 17.5, width: 5.2, height: 9.2 },
+    left: 35,
+    top: 230,
+    width: 279,
+    height: 86,
+    centerX: 174,
+    centerY: 246,
   },
+
   {
     id: 'experience',
-    label: 'Experience',
-    tagline: 'Level Up',
-    route: '/experience',
-    position: { left: 41.2, top: 17.5, width: 5.2, height: 9.2 },
+    left: 35,
+    top: 280,
+    width: 279,
+    height: 86,
+    centerX: 174,
+    centerY: 346,
   },
+
   {
     id: 'projects',
-    label: 'Projects',
-    tagline: 'New Game',
-    route: '/projects',
-    position: { left: 47.2, top: 17.5, width: 5.2, height: 9.2 },
+    left: 35,
+    top: 374,
+    width: 279,
+    height: 86,
+    centerX: 174,
+    centerY: 417,
   },
+
   {
     id: 'skills',
-    label: 'Skills',
-    tagline: 'Power Up',
-    route: '/skills',
-    position: { left: 35.2, top: 27.8, width: 5.2, height: 9.2 },
+    left: 35,
+    top: 472,
+    width: 279,
+    height: 86,
+    centerX: 174,
+    centerY: 480,
   },
+
   {
     id: 'contact',
-    label: 'Contact',
-    tagline: 'Connect',
-    route: '/contact',
-    position: { left: 41.2, top: 27.8, width: 5.2, height: 9.2 },
+    left: 35,
+    top: 568,
+    width: 279,
+    height: 86,
+    centerX: 174,
+    centerY: 550,
   },
+
   {
     id: 'resume',
-    label: 'Resume',
-    tagline: 'My resume',
-    route: '/resume',
-    position: { left: 47.2, top: 27.8, width: 5.2, height: 9.2 },
+    left: 35,
+    top: 766,
+    width: 279,
+    height: 86,
+    centerX: 174,
+    centerY: 630,
   },
-];
+] as const;
 
-/** Floppy disk drive — “INSERT DISK TO BEGIN” */
+/**
+ * --------------------------------
+ * DRIVE INSERT SLOT
+ * --------------------------------
+ */
+
 export const DISK_DRIVE_RECT: SceneRect = {
-  left: 38.5,
-  top: 35.8,
-  width: 21,
-  height: 6.5,
+  left: 35.5,
+  top: 34.0,
+  width: 16.5,
+  height: 4.5,
 };
 
-export const DROP_ZONE_IDS = ['disk-drive'] as const;
+/**
+ * --------------------------------
+ * DISK META
+ * --------------------------------
+ */
+
+const DISK_META: Record<DiskId, Omit<PortfolioDisk, 'id' | 'shelfIndex'>> = {
+  bio: {
+    discLabel: 'BIO.DISC',
+    screenLabel: 'BIO',
+    tagline: 'GET TO KNOW ME',
+    route: '/bio',
+    color: '#f472b6',
+  },
+
+  experience: {
+    discLabel: 'EXPERIENCE.DISC',
+    screenLabel: 'EXPERIENCE',
+    tagline: 'LEVEL UP',
+    route: '/experience',
+    color: '#c084fc',
+  },
+
+  projects: {
+    discLabel: 'PROJECTS.DISC',
+    screenLabel: 'PROJECTS',
+    tagline: 'NEW GAME',
+    route: '/projects',
+    color: '#fb923c',
+  },
+
+  skills: {
+    discLabel: 'SKILLS.DISC',
+    screenLabel: 'SKILLS',
+    tagline: 'POWER UP',
+    route: '/skills',
+    color: '#4ade80',
+  },
+
+  contact: {
+    discLabel: 'CONTACT.DISC',
+    screenLabel: 'CONTACT',
+    tagline: 'CONNECT',
+    route: '/contact',
+    color: '#f87171',
+  },
+
+  resume: {
+    discLabel: 'RESUME.DISC',
+    screenLabel: 'RESUME',
+    tagline: 'MY RESUME',
+    route: '/resume',
+    color: '#818cf8',
+  },
+};
+
+export const PORTFOLIO_DISKS: PortfolioDisk[] = SHELF_DISK_ORDER.map(
+  (id, index) => ({
+    id,
+    shelfIndex: index + 1,
+    ...DISK_META[id],
+  }),
+);
+
+/**
+ * --------------------------------
+ * MOTION COLLISION DETECTION
+ * --------------------------------
+ *
+ * Uses Framer Motion viewport coordinates:
+ *
+ * info.point.x
+ * info.point.y
+ *
+ * This is MUCH more reliable than
+ * raw mouse coordinates while dragging.
+ */
+
+export function getHoveredDiskIndex(
+  pointX: number,
+  pointY: number,
+  sceneRect: DOMRect,
+): number {
+  /**
+   * Convert viewport coordinates
+   * into scene-local coordinates
+   */
+
+  const localX = pointX - sceneRect.left;
+  const localY = pointY - sceneRect.top;
+
+  /**
+   * Current responsive scale
+   */
+
+  const scaleX = sceneRect.width / SCENE_WIDTH;
+  const scaleY = sceneRect.height / SCENE_HEIGHT;
+
+  /**
+   * Find nearest disk center
+   */
+
+  let closestIndex = -1;
+  let closestDistance = Infinity;
+
+  for (let i = 0; i < DISK_HITBOXES.length; i++) {
+    const disk = DISK_HITBOXES[i];
+
+    const centerX = disk.centerX * scaleX;
+    const centerY = disk.centerY * scaleY;
+
+    const dx = localX - centerX;
+    const dy = localY - centerY;
+
+    const distance = Math.sqrt(dx * dx + dy * dy);
+
+    if (distance < closestDistance) {
+      closestDistance = distance;
+      closestIndex = i;
+    }
+  }
+
+  /**
+   * Prevent triggering outside rack
+   */
+
+  if (closestDistance > 140 * scaleY) {
+    return -1;
+  }
+
+  return closestIndex;
+}
+
+/**
+ * --------------------------------
+ * MOTION HELPER
+ * --------------------------------
+ *
+ * Direct helper for:
+ *
+ * onDrag={(_, info) => ...}
+ */
+
+export function getHoveredDiskFromPanInfo(
+  info: PanInfo,
+  sceneRect: DOMRect,
+): PortfolioDisk | null {
+  const index = getHoveredDiskIndex(info.point.x, info.point.y, sceneRect);
+
+  if (index === -1) {
+    return null;
+  }
+
+  return PORTFOLIO_DISKS[index];
+}
+
+/**
+ * --------------------------------
+ * SECTION META
+ * --------------------------------
+ */
 
 export const SECTION_META: Record<
   DiskId,
-  { title: string; description: string }
+  {
+    title: string;
+    discLabel: string;
+    description: string;
+  }
 > = {
   bio: {
     title: 'Bio',
-    description: 'Get to know me — who I am and what I build.',
+    discLabel: 'BIO.DISC',
+    description: 'GET TO KNOW ME — who I am and what I build.',
   },
+
   experience: {
     title: 'Experience',
-    description: 'Level Up — roles, quests completed, and XP gained.',
+    discLabel: 'EXPERIENCE.DISC',
+    description: 'LEVEL UP — roles, quests completed, and XP gained.',
   },
+
   projects: {
     title: 'Projects',
-    description: 'New Game — shipped work and side quests.',
+    discLabel: 'PROJECTS.DISC',
+    description: 'NEW GAME — shipped work and side quests.',
   },
+
   skills: {
     title: 'Skills',
-    description: 'Power Up — abilities, stacks, and tooling.',
+    discLabel: 'SKILLS.DISC',
+    description: 'POWER UP — abilities, stacks, and tooling.',
   },
+
   contact: {
     title: 'Contact',
-    description: 'Connect — send a transmission.',
+    discLabel: 'CONTACT.DISC',
+    description: 'CONNECT — send a transmission.',
   },
+
   resume: {
     title: 'Resume',
-    description: 'My resume — character sheet & career highlights.',
+    discLabel: 'RESUME.DISC',
+    description: 'MY RESUME — character sheet & career highlights.',
   },
 };

@@ -1,131 +1,162 @@
-import { useCallback, useState } from 'react';
-import {
-  DndContext,
-  DragOverlay,
-  PointerSensor,
-  TouchSensor,
-  useSensor,
-  useSensors,
-  type DragEndEvent,
-  type DragStartEvent,
-} from '@dnd-kit/core';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   DISK_DRIVE_RECT,
-  DROP_ZONE_IDS,
   INSERT_DELAY_MS,
-  PORTFOLIO_DISKS,
   SCENE_ASPECT,
   SCENE_HEIGHT,
   SCENE_IMAGE,
   SCENE_WIDTH,
   type PortfolioDisk,
 } from '../../config/portfolio-os.config';
-import { CdDropZone } from './CdDropZone';
-import { DraggableDisk } from './DraggableDisk';
+import { DragBadge } from './DragBadge';
+import { ShelfZone } from './ShelfZone';
+import { rectToStyle } from './rectToStyle';
 import './portfolio-os.css';
+
+const IDLE_STATUS = '> Drag a floppy from the shelf into the drive slot…';
+
+function isOverlapping(ax: number, ay: number, b: DOMRect): boolean {
+  // Point-in-rect — pointer coords vs drive bounding rect
+  return ax >= b.left && ax <= b.right && ay >= b.top && ay <= b.bottom;
+}
+
+type DragState = {
+  disk: PortfolioDisk;
+  pointerId: number;
+  x: number;
+  y: number;
+};
 
 export function PortfolioOsScene() {
   const navigate = useNavigate();
-  const [activeDisk, setActiveDisk] = useState<PortfolioDisk | null>(null);
-  const [inserting, setInserting] = useState(false);
-  const [status, setStatus] = useState('> Drag a disk into the drive…');
+  const sceneRef = useRef<HTMLDivElement>(null);
+  const driveRef = useRef<HTMLDivElement>(null);
 
-  const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
-    useSensor(TouchSensor, {
-      activationConstraint: { delay: 120, tolerance: 6 },
-    }),
-  );
+  const [drag, setDrag] = useState<DragState | null>(null);
+  const [driveHover, setDriveHover] = useState(false);
+  const [inserting, setInserting] = useState(false);
+  const [status, setStatus] = useState(IDLE_STATUS);
 
   const insertDisk = useCallback(
     (disk: PortfolioDisk) => {
       if (inserting) return;
       setInserting(true);
-      setStatus(`> Loading ${disk.label.toUpperCase()}…`);
-      window.setTimeout(() => {
-        navigate(disk.route);
-      }, INSERT_DELAY_MS);
+      setStatus(`> Loading ${disk.discLabel}…`);
+      window.setTimeout(() => navigate(disk.route), INSERT_DELAY_MS);
     },
     [inserting, navigate],
   );
 
-  const handleDragStart = (event: DragStartEvent) => {
-    const disk = PORTFOLIO_DISKS.find((d) => d.id === event.active.id);
-    setActiveDisk(disk ?? null);
-    setStatus('> Insert disk into drive…');
-  };
+  const handleGrab = useCallback(
+    (disk: PortfolioDisk, pointerId: number) => {
+      if (inserting) return;
+      setDrag({ disk, pointerId, x: 0, y: 0 });
+      setStatus(`> Dragging ${disk.discLabel} — drop into the drive slot`);
+    },
+    [inserting],
+  );
 
-  const handleDragEnd = (event: DragEndEvent) => {
-    setActiveDisk(null);
-    const { active, over } = event;
+  useEffect(() => {
+    if (!drag) return;
 
-    if (
-      !over ||
-      !DROP_ZONE_IDS.includes(over.id as (typeof DROP_ZONE_IDS)[number])
-    ) {
-      setStatus('> Drag a disk into the drive…');
-      return;
-    }
+    const onMove = (e: PointerEvent) => {
+      if (e.pointerId !== drag.pointerId) return;
+      setDrag((d) => (d ? { ...d, x: e.clientX, y: e.clientY } : null));
+      const driveRect = driveRef.current?.getBoundingClientRect();
+      setDriveHover(
+        driveRect ? isOverlapping(e.clientX, e.clientY, driveRect) : false,
+      );
+    };
 
-    const disk = PORTFOLIO_DISKS.find((d) => d.id === active.id);
-    if (disk) insertDisk(disk);
-  };
+    const onUp = (e: PointerEvent) => {
+      if (e.pointerId !== drag.pointerId) return;
+      const driveRect = driveRef.current?.getBoundingClientRect();
+      const dropped =
+        driveRect ? isOverlapping(e.clientX, e.clientY, driveRect) : false;
 
-  const handleDragCancel = () => {
-    setActiveDisk(null);
-    setStatus('> Drag a disk into the drive…');
-  };
+      setDrag(null);
+      setDriveHover(false);
+
+      if (dropped) {
+        insertDisk(drag.disk);
+      } else {
+        setStatus(IDLE_STATUS);
+      }
+    };
+
+    const onCancel = (e: PointerEvent) => {
+      if (e.pointerId !== drag.pointerId) return;
+      setDrag(null);
+      setDriveHover(false);
+      setStatus(IDLE_STATUS);
+    };
+
+    window.addEventListener('pointermove', onMove);
+    window.addEventListener('pointerup', onUp);
+    window.addEventListener('pointercancel', onCancel);
+    return () => {
+      window.removeEventListener('pointermove', onMove);
+      window.removeEventListener('pointerup', onUp);
+      window.removeEventListener('pointercancel', onCancel);
+    };
+  }, [drag, insertDisk]);
+
+  const isDragging = Boolean(drag);
 
   return (
-    <DndContext
-      sensors={sensors}
-      onDragStart={handleDragStart}
-      onDragEnd={handleDragEnd}
-      onDragCancel={handleDragCancel}
-    >
+    <div className="portfolio-os-scene-wrap">
       <div
+        ref={sceneRef}
         className={`portfolio-os-scene${inserting ? ' portfolio-os-scene--inserting' : ''}`}
-        style={{ aspectRatio: SCENE_ASPECT }}
+        style={{
+          aspectRatio: SCENE_ASPECT,
+          cursor: isDragging ? 'grabbing' : undefined,
+        }}
       >
         <img
           className="portfolio-os-scene__bg"
           src={SCENE_IMAGE}
-          alt="Kal's Portfolio OS — retro desk with monitor, floppy disks, and disk drive"
+          alt="Kal's Portfolio OS — drag a floppy from the left shelf into the drive slot"
           width={SCENE_WIDTH}
           height={SCENE_HEIGHT}
           draggable={false}
         />
 
-        <CdDropZone
-          id="disk-drive"
-          rect={DISK_DRIVE_RECT}
-          label="Insert disk to begin"
+        {/* Drive drop zone — visual feedback only */}
+        <div
+          ref={driveRef}
+          className={[
+            'portfolio-os-hotspot',
+            'portfolio-os-drop',
+            isDragging ? 'portfolio-os-drop--active' : '',
+            driveHover ? 'portfolio-os-drop--over' : '',
+          ]
+            .filter(Boolean)
+            .join(' ')}
+          style={rectToStyle(DISK_DRIVE_RECT)}
+          aria-hidden
         />
 
-        {PORTFOLIO_DISKS.map((disk) => (
-          <DraggableDisk
-            key={disk.id}
-            disk={disk}
-            disabled={inserting}
-            onActivate={insertDisk}
-          />
-        ))}
-
-        <p className="portfolio-os-status" aria-live="polite">
-          {status}
-        </p>
+        {/* Shelf hit area — detects which disk was grabbed by pointer Y */}
+        <ShelfZone
+          sceneRef={sceneRef}
+          disabled={inserting}
+          onGrab={handleGrab}
+        />
       </div>
 
-      <DragOverlay dropAnimation={null}>
-        {activeDisk ? (
-          <div
-            className="portfolio-os-drag-overlay"
-            style={{ width: 52, height: 52 }}
-            aria-hidden
-          />
-        ) : null}
-      </DragOverlay>
-    </DndContext>
+      {/* Floating badge that follows the cursor while dragging */}
+      {drag && drag.x !== 0 && (
+        <DragBadge disk={drag.disk} x={drag.x} y={drag.y} />
+      )}
+
+      <p
+        className={`portfolio-os-status${isDragging ? ' portfolio-os-status--active' : ''}`}
+        aria-live="polite"
+      >
+        {status}
+      </p>
+    </div>
   );
 }

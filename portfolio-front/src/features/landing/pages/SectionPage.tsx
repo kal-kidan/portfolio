@@ -25,7 +25,7 @@ export function SectionPage() {
 
   return (
     <main className="section-shell">
-      <p className="section-shell__boot">&gt; BOOTING {meta.title.toUpperCase()}…</p>
+      <p className="section-shell__boot">&gt; BOOTING {meta.discLabel}…</p>
       <h1 className="section-shell__title">{meta.title}</h1>
       <p className="section-shell__desc">{meta.description}</p>
       <p className="section-shell__hint">
