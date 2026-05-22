@@ -1,4 +1,10 @@
 import sceneImage from '@/assets/home/kals-portofolio-os.png';
+import bioDiscImage from '@/assets/home/dragged-imgs/bio-disc.png';
+import contactDiscImage from '@/assets/home/dragged-imgs/contact-disc.png';
+import experienceDiscImage from '@/assets/home/dragged-imgs/experience-disc.png';
+import projectsDiscImage from '@/assets/home/dragged-imgs/projects-disc.png';
+import resumeDiscImage from '@/assets/home/dragged-imgs/resume-disc.png';
+import skillsDiscImage from '@/assets/home/dragged-imgs/skills-disc.png';
 import type { PanInfo } from 'framer-motion';
 
 /**
@@ -71,6 +77,16 @@ export type PortfolioDisk = {
   tagline: string;
   route: string;
   color: string;
+  dragImage: string;
+};
+
+export const DISK_DRAG_IMAGES: Record<DiskId, string> = {
+  bio: bioDiscImage,
+  experience: experienceDiscImage,
+  projects: projectsDiscImage,
+  skills: skillsDiscImage,
+  contact: contactDiscImage,
+  resume: resumeDiscImage,
 };
 
 /**
@@ -163,16 +179,29 @@ export const DISK_HITBOXES: readonly DiskHitbox[] = [
 
 /**
  * --------------------------------
- * DRIVE INSERT SLOT
+ * INSERT DISK MODULE (left bay — "INSERT DISK TO BEGIN")
  * --------------------------------
+ *
+ * Panel: source px 528,648 → 760,760 on 1672×941
+ * Slit:  source px 548,672 → 188×20 (narrow opening only)
  */
 
-export const DISK_DRIVE_RECT: SceneRect = {
-  left: 35.5,
-  top: 34.0,
-  width: 16.5,
-  height: 4.5,
+export const DISK_INSERT_PANEL_RECT: SceneRect = {
+  left: 37.58,
+  top: 73.86,
+  width: 18.88,
+  height: 8.9,
 };
+
+export const DISK_INSERT_SLIT_RECT: SceneRect = {
+  left: 32.78,
+  top: 71.41,
+  width: 11.24,
+  height: 2.13,
+};
+
+/** Drop target — full insert module (not the monitor slot) */
+export const DISK_DRIVE_RECT = DISK_INSERT_PANEL_RECT;
 
 /**
  * --------------------------------
@@ -180,7 +209,10 @@ export const DISK_DRIVE_RECT: SceneRect = {
  * --------------------------------
  */
 
-const DISK_META: Record<DiskId, Omit<PortfolioDisk, 'id' | 'shelfIndex'>> = {
+const DISK_META: Record<
+  DiskId,
+  Omit<PortfolioDisk, 'id' | 'shelfIndex' | 'dragImage'>
+> = {
   bio: {
     discLabel: 'BIO.DISC',
     screenLabel: 'BIO',
@@ -234,6 +266,7 @@ export const PORTFOLIO_DISKS: PortfolioDisk[] = SHELF_DISK_ORDER.map(
   (id, index) => ({
     id,
     shelfIndex: index + 1,
+    dragImage: DISK_DRAG_IMAGES[id],
     ...DISK_META[id],
   }),
 );

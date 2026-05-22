@@ -1,9 +1,50 @@
 .portfolio-os-scene-wrap {
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 0.35rem;
   flex-shrink: 0;
+  z-index: 0;
+}
+
+/* Page bleed: extend image edge colors outward so margins match the art */
+.portfolio-os-scene-wrap::before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: calc(100% + min(36vw, 28rem));
+  height: calc(100% + min(28vh, 16rem));
+  transform: translate(-50%, -50%);
+  z-index: -1;
+  pointer-events: none;
+  background:
+    linear-gradient(
+      90deg,
+      var(--scene-edge-left) 0%,
+      color-mix(in srgb, var(--scene-edge-left) 40%, transparent) 28%,
+      transparent 52%
+    ),
+    linear-gradient(
+      270deg,
+      var(--scene-edge-right) 0%,
+      color-mix(in srgb, var(--scene-edge-right) 40%, transparent) 28%,
+      transparent 52%
+    ),
+    linear-gradient(
+      180deg,
+      var(--scene-edge-top) 0%,
+      color-mix(in srgb, var(--scene-edge-top) 35%, transparent) 30%,
+      transparent 55%
+    ),
+    linear-gradient(
+      0deg,
+      var(--scene-edge-bottom) 0%,
+      color-mix(in srgb, var(--scene-edge-bottom) 40%, transparent) 32%,
+      transparent 58%
+    ),
+    var(--portfolio-bg-base);
 }
 
 .portfolio-os-page {
@@ -12,30 +53,92 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  background: var(--portfolio-bg);
-  background-color: var(--portfolio-bg-top);
   padding: 0.5rem;
 }
 
 .portfolio-os-scene {
   position: relative;
+  z-index: 1;
   width: min(calc(100vw - 1rem), calc((100dvh - 2rem) * 1672 / 941));
   max-height: calc(100dvh - 2rem);
   aspect-ratio: 1672 / 941;
-  background: var(--portfolio-bg);
-  background-color: var(--portfolio-bg-top);
   user-select: none;
+  overflow: hidden;
+  background: var(--portfolio-bg-base);
+  isolation: isolate;
+}
+
+/* Art + unified grid overlay — one surface, not a floating card */
+.portfolio-os-scene__stage {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
 }
 
 .portfolio-os-scene__bg {
   display: block;
   width: 100%;
   height: 100%;
-  object-fit: contain;
-  image-rendering: -webkit-optimize-contrast;
-  image-rendering: crisp-edges;
+  object-fit: fill;
   pointer-events: none;
-  filter: contrast(1.04) brightness(1.02);
+  /* Darken bright interior; edge bleed layers handle border match */
+  filter: contrast(1.02) brightness(0.88) saturate(0.9);
+}
+
+.portfolio-os-scene__blend {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image: var(--portfolio-bg-scene-overlay);
+  background-size: var(--portfolio-bg-scene-overlay-sizes);
+  background-repeat: var(--portfolio-bg-scene-overlay-repeat);
+  background-position: 0 0;
+  background-attachment: fixed;
+  opacity: 0.38;
+  mix-blend-mode: overlay;
+}
+
+/* Per-side tint from sampled PNG edge pixels */
+.portfolio-os-scene__edges {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--scene-edge-top) 95%, transparent) 0%,
+      color-mix(in srgb, var(--scene-edge-top) 45%, transparent) 7%,
+      transparent 16%
+    ),
+    linear-gradient(
+      0deg,
+      color-mix(in srgb, var(--scene-edge-bottom) 95%, transparent) 0%,
+      color-mix(in srgb, var(--scene-edge-bottom) 50%, transparent) 9%,
+      transparent 18%
+    ),
+    linear-gradient(
+      90deg,
+      color-mix(in srgb, var(--scene-edge-left) 80%, transparent) 0%,
+      color-mix(in srgb, var(--scene-edge-left) 30%, transparent) 6%,
+      transparent 14%
+    ),
+    linear-gradient(
+      270deg,
+      color-mix(in srgb, var(--scene-edge-right) 80%, transparent) 0%,
+      color-mix(in srgb, var(--scene-edge-right) 30%, transparent) 6%,
+      transparent 14%
+    );
+}
+
+.portfolio-os-scene__vignette {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(
+    ellipse 100% 98% at 50% 50%,
+    transparent 58%,
+    color-mix(in srgb, var(--scene-edge-top) 25%, transparent) 100%
+  );
 }
 
 .portfolio-os-scene--inserting .portfolio-os-scene__bg {
@@ -45,10 +148,10 @@
 @keyframes portfolio-os-flicker {
   0%,
   100% {
-    filter: contrast(1.04) brightness(1.02);
+    filter: contrast(1.02) brightness(0.88) saturate(0.9);
   }
   50% {
-    filter: contrast(1.06) brightness(1.08);
+    filter: contrast(1.04) brightness(0.92) saturate(0.92);
   }
 }
 
@@ -58,28 +161,141 @@
 }
 
 
-/* Drive slot — visual hint while dragging */
-.portfolio-os-drop {
-  z-index: 1;
-  border: 1px dashed transparent;
+/* Insert disk module — overlays the left "INSERT DISK TO BEGIN" bay */
+.portfolio-os-insert {
+  z-index: 15;
+  pointer-events: none;
+}
+
+.portfolio-os-insert__frame {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  box-sizing: border-box;
+  border: 1px solid transparent;
   border-radius: 2px;
-  background: transparent;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.portfolio-os-insert__slit {
+  position: absolute;
+  box-sizing: border-box;
+  border-radius: 1px;
+  background: rgba(0, 0, 0, 0.35);
+  box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.85);
+  transition:
+    background-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.portfolio-os-insert__led {
+  position: absolute;
+  left: 78%;
+  top: 28%;
+  width: 0.55rem;
+  height: 0.55rem;
+  border-radius: 50%;
+  background: #7f1d1d;
+  box-shadow: 0 0 4px rgba(127, 29, 29, 0.8);
+  transition:
+    background-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.portfolio-os-insert__hint {
+  position: absolute;
+  left: 50%;
+  bottom: 12%;
+  transform: translateX(-50%);
+  margin: 0;
+  font-family: ui-monospace, 'Courier New', monospace;
+  font-size: clamp(0.38rem, 1.05vw, 0.62rem);
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  color: rgba(251, 146, 60, 0);
+  text-shadow: none;
+  white-space: nowrap;
   pointer-events: none;
   transition:
-    border-color 0.15s ease,
-    background-color 0.15s ease,
-    box-shadow 0.15s ease;
+    color 0.2s ease,
+    text-shadow 0.2s ease;
 }
 
-.portfolio-os-drop--active {
-  border-color: rgba(251, 146, 60, 0.45);
-  background: rgba(251, 146, 60, 0.06);
+.portfolio-os-insert--active .portfolio-os-insert__frame {
+  border-color: rgba(251, 146, 60, 0.55);
+  box-shadow:
+    0 0 12px rgba(251, 146, 60, 0.2),
+    inset 0 0 20px rgba(251, 146, 60, 0.06);
 }
 
-.portfolio-os-drop--over {
-  border-color: rgba(253, 224, 71, 0.7);
-  background: rgba(253, 224, 71, 0.12);
-  box-shadow: inset 0 0 14px rgba(253, 224, 71, 0.18);
+.portfolio-os-insert--active .portfolio-os-insert__hint {
+  color: rgba(251, 146, 60, 0.75);
+  text-shadow: 0 0 8px rgba(251, 146, 60, 0.45);
+}
+
+.portfolio-os-insert--active .portfolio-os-insert__led {
+  background: #dc2626;
+  box-shadow:
+    0 0 6px rgba(220, 38, 38, 0.9),
+    0 0 14px rgba(220, 38, 38, 0.45);
+}
+
+.portfolio-os-insert--over .portfolio-os-insert__frame {
+  border-color: rgba(253, 224, 71, 0.85);
+  box-shadow:
+    0 0 18px rgba(253, 224, 71, 0.35),
+    inset 0 0 24px rgba(253, 224, 71, 0.12);
+}
+
+.portfolio-os-insert--over .portfolio-os-insert__slit {
+  background: rgba(20, 12, 8, 0.5);
+  box-shadow:
+    inset 0 0 16px rgba(253, 224, 71, 0.35),
+    0 0 12px rgba(251, 146, 60, 0.5);
+}
+
+.portfolio-os-insert--over .portfolio-os-insert__hint {
+  color: rgba(253, 224, 71, 0.98);
+  text-shadow:
+    0 0 10px rgba(253, 224, 71, 0.8),
+    0 0 20px rgba(251, 146, 60, 0.5);
+}
+
+.portfolio-os-insert--over .portfolio-os-insert__led {
+  background: #facc15;
+  box-shadow:
+    0 0 8px rgba(250, 204, 21, 1),
+    0 0 18px rgba(250, 204, 21, 0.55);
+}
+
+.portfolio-os-insert--inserting .portfolio-os-insert__frame {
+  animation: portfolio-os-insert-pulse 0.45s ease-in-out;
+}
+
+@keyframes portfolio-os-insert-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 12px rgba(251, 146, 60, 0.25);
+  }
+  50% {
+    box-shadow: 0 0 28px rgba(253, 224, 71, 0.55);
+  }
+}
+
+.portfolio-os-drag-disc {
+  position: fixed;
+  z-index: 9999;
+  width: clamp(7.5rem, 22vw, 12.5rem);
+  height: auto;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  user-select: none;
+  background: transparent;
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: crisp-edges;
+  filter: drop-shadow(0 8px 16px rgba(0, 0, 0, 0.55));
 }
 
 .portfolio-os-status {
@@ -99,7 +315,8 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .portfolio-os-scene--inserting .portfolio-os-scene__bg {
+  .portfolio-os-scene--inserting .portfolio-os-scene__bg,
+  .portfolio-os-insert--inserting .portfolio-os-insert__frame {
     animation: none;
   }
 

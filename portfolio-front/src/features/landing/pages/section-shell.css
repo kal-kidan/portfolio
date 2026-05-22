@@ -6,8 +6,6 @@
   justify-content: center;
   gap: 0.75rem;
   padding: 2rem;
-  background: var(--portfolio-bg);
-  background-color: var(--portfolio-bg-top);
   color: #e9d5ff;
   font-family: ui-monospace, 'Courier New', monospace;
   text-align: center;

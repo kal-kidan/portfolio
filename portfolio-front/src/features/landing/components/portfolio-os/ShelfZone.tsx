@@ -10,7 +10,12 @@ import {
 type ShelfZoneProps = {
   sceneRef: React.RefObject<HTMLDivElement | null>;
   disabled: boolean;
-  onGrab: (disk: PortfolioDisk, pointerId: number) => void;
+  onGrab: (
+    disk: PortfolioDisk,
+    pointerId: number,
+    x: number,
+    y: number,
+  ) => void;
 };
 
 /**
@@ -26,7 +31,7 @@ export function ShelfZone({ sceneRef, disabled, onGrab }: ShelfZoneProps) {
     const index = getHoveredDiskIndex(e.clientX, e.clientY, scene);
     if (index < 0) return;
 
-    onGrab(PORTFOLIO_DISKS[index], e.pointerId);
+    onGrab(PORTFOLIO_DISKS[index], e.pointerId, e.clientX, e.clientY);
   };
 
   return (

@@ -1,14 +1,187 @@
 @import 'tailwindcss';
 
-/* Sampled from kals-portofolio-os.png edges (top #020102 → bottom #1a0c08) */
+/* Edge colors sampled from kals-portofolio-os.png (12px strips per side) */
 :root {
-  --portfolio-bg-top: #020102;
-  --portfolio-bg-bottom: #1a0c08;
-  --portfolio-bg: linear-gradient(
+  --scene-edge-top: #060305;
+  --scene-edge-bottom: #1a0708;
+  --scene-edge-left: #09050d;
+  --scene-edge-right: #080209;
+
+  --portfolio-bg-top: var(--scene-edge-top);
+  --portfolio-bg-bottom: var(--scene-edge-bottom);
+
+  --portfolio-bg-base: linear-gradient(
     180deg,
-    var(--portfolio-bg-top) 0%,
-    var(--portfolio-bg-bottom) 100%
+    var(--scene-edge-top) 0%,
+    #0b0407 38%,
+    #120609 68%,
+    var(--scene-edge-bottom) 100%
   );
+
+  /* Sharp pixel grit — no blur */
+  --portfolio-bg-noise: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='8' shape-rendering='crispEdges'%3E%3Crect width='1' height='1' fill='%23ffffff' opacity='0.035'/%3E%3Crect x='4' y='4' width='1' height='1' fill='%23ffffff' opacity='0.035'/%3E%3Crect x='4' width='1' height='1' fill='%23000000' opacity='0.05'/%3E%3Crect y='4' width='1' height='1' fill='%23000000' opacity='0.05'/%3E%3C/svg%3E");
+
+  /* Layer stack (top → bottom) */
+  --portfolio-bg-layers:
+    radial-gradient(
+      ellipse 130% 115% at 50% 45%,
+      transparent 42%,
+      rgba(2, 1, 2, 0.55) 100%
+    ),
+    repeating-linear-gradient(
+      0deg,
+      transparent 0,
+      transparent 2px,
+      rgba(0, 0, 0, 0.14) 2px,
+      rgba(0, 0, 0, 0.14) 3px
+    ),
+    var(--portfolio-bg-noise),
+    radial-gradient(
+      circle at 1px 1px,
+      rgba(251, 146, 60, 0.14) 1px,
+      transparent 1px
+    ),
+    repeating-linear-gradient(
+      135deg,
+      transparent 0,
+      transparent 11px,
+      rgba(26, 12, 8, 0.22) 11px,
+      rgba(26, 12, 8, 0.22) 12px
+    ),
+    repeating-linear-gradient(
+      0deg,
+      transparent 0,
+      transparent 7px,
+      rgba(253, 224, 71, 0.07) 7px,
+      rgba(253, 224, 71, 0.07) 8px
+    ),
+    repeating-linear-gradient(
+      90deg,
+      transparent 0,
+      transparent 7px,
+      rgba(253, 224, 71, 0.07) 7px,
+      rgba(253, 224, 71, 0.07) 8px
+    ),
+    repeating-linear-gradient(
+      0deg,
+      transparent 0,
+      transparent 31px,
+      rgba(251, 146, 60, 0.13) 31px,
+      rgba(251, 146, 60, 0.13) 32px
+    ),
+    repeating-linear-gradient(
+      90deg,
+      transparent 0,
+      transparent 31px,
+      rgba(251, 146, 60, 0.13) 31px,
+      rgba(251, 146, 60, 0.13) 32px
+    ),
+    linear-gradient(
+      90deg,
+      color-mix(in srgb, var(--scene-edge-left) 88%, transparent) 0%,
+      transparent 32%
+    ),
+    linear-gradient(
+      270deg,
+      color-mix(in srgb, var(--scene-edge-right) 88%, transparent) 0%,
+      transparent 32%
+    ),
+    var(--portfolio-bg-base);
+
+  --portfolio-bg-layer-sizes:
+    100% 100%,
+    100% 3px,
+    8px 8px,
+    32px 32px,
+    16px 16px,
+    8px 8px,
+    8px 8px,
+    32px 32px,
+    32px 32px,
+    100% 100%,
+    100% 100%,
+    100% 100%;
+
+  --portfolio-bg-layer-repeat:
+    no-repeat,
+    repeat,
+    repeat,
+    repeat,
+    repeat,
+    repeat,
+    repeat,
+    repeat,
+    repeat,
+    no-repeat,
+    no-repeat,
+    no-repeat;
+
+  /* Grid + texture only — overlaid on scene art so it matches the page */
+  --portfolio-bg-scene-overlay:
+    repeating-linear-gradient(
+      0deg,
+      transparent 0,
+      transparent 2px,
+      rgba(0, 0, 0, 0.12) 2px,
+      rgba(0, 0, 0, 0.12) 3px
+    ),
+    var(--portfolio-bg-noise),
+    radial-gradient(
+      circle at 1px 1px,
+      rgba(251, 146, 60, 0.12) 1px,
+      transparent 1px
+    ),
+    repeating-linear-gradient(
+      135deg,
+      transparent 0,
+      transparent 11px,
+      rgba(26, 12, 8, 0.18) 11px,
+      rgba(26, 12, 8, 0.18) 12px
+    ),
+    repeating-linear-gradient(
+      0deg,
+      transparent 0,
+      transparent 7px,
+      rgba(251, 146, 60, 0.04) 7px,
+      rgba(251, 146, 60, 0.04) 8px
+    ),
+    repeating-linear-gradient(
+      90deg,
+      transparent 0,
+      transparent 7px,
+      rgba(251, 146, 60, 0.04) 7px,
+      rgba(251, 146, 60, 0.04) 8px
+    ),
+    repeating-linear-gradient(
+      0deg,
+      transparent 0,
+      transparent 31px,
+      rgba(251, 146, 60, 0.08) 31px,
+      rgba(251, 146, 60, 0.08) 32px
+    ),
+    repeating-linear-gradient(
+      90deg,
+      transparent 0,
+      transparent 31px,
+      rgba(251, 146, 60, 0.08) 31px,
+      rgba(251, 146, 60, 0.08) 32px
+    );
+
+  --portfolio-bg-scene-overlay-sizes:
+    100% 3px,
+    8px 8px,
+    32px 32px,
+    16px 16px,
+    8px 8px,
+    8px 8px,
+    32px 32px,
+    32px 32px;
+
+  --portfolio-bg-scene-overlay-repeat: repeat, repeat, repeat, repeat, repeat,
+    repeat, repeat, repeat;
+
+  /* Legacy alias — gradient only (prefer --portfolio-bg-layers on surfaces) */
+  --portfolio-bg: var(--portfolio-bg-base);
 }
 
 @layer base {
@@ -18,14 +191,107 @@
       system-ui,
       -apple-system,
       sans-serif;
-    background: var(--portfolio-bg);
+  }
+
+  html,
+  body,
+  .portfolio-os-page,
+  .section-shell {
     background-color: var(--portfolio-bg-top);
+    background-image: var(--portfolio-bg-layers);
+    background-size: var(--portfolio-bg-layer-sizes);
+    background-repeat: var(--portfolio-bg-layer-repeat);
+    background-position: center;
+    background-attachment: fixed;
   }
 
   body {
+    position: relative;
     min-height: 100dvh;
     overflow-x: hidden;
-    background: var(--portfolio-bg);
-    background-color: var(--portfolio-bg-top);
+  }
+
+  /* Sharp grid — sits above base bg, below page content */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    background-image:
+      repeating-linear-gradient(
+        0deg,
+        transparent 0,
+        transparent 31px,
+        rgba(251, 146, 60, 0.16) 31px,
+        rgba(251, 146, 60, 0.16) 32px
+      ),
+      repeating-linear-gradient(
+        90deg,
+        transparent 0,
+        transparent 31px,
+        rgba(251, 146, 60, 0.16) 31px,
+        rgba(251, 146, 60, 0.16) 32px
+      ),
+      repeating-linear-gradient(
+        0deg,
+        transparent 0,
+        transparent 7px,
+        rgba(253, 224, 71, 0.055) 7px,
+        rgba(253, 224, 71, 0.055) 8px
+      ),
+      repeating-linear-gradient(
+        90deg,
+        transparent 0,
+        transparent 7px,
+        rgba(253, 224, 71, 0.055) 7px,
+        rgba(253, 224, 71, 0.055) 8px
+      ),
+      radial-gradient(
+        circle at 1px 1px,
+        rgba(253, 224, 71, 0.22) 1px,
+        transparent 1px
+      );
+    background-size:
+      32px 32px,
+      32px 32px,
+      8px 8px,
+      8px 8px,
+      32px 32px;
+    background-position: 0 0, 0 0, 0 0, 0 0, 0 0;
+    opacity: 0.65;
+  }
+
+  .portfolio-os-page,
+  .section-shell {
+    position: relative;
+    z-index: 1;
+  }
+
+  /* HUD corner brackets on home */
+  .portfolio-os-page::before {
+    content: '';
+    position: fixed;
+    inset: clamp(0.5rem, 2vw, 1.25rem);
+    z-index: 0;
+    pointer-events: none;
+    opacity: 0.45;
+    background:
+      linear-gradient(rgba(251, 146, 60, 0.9), rgba(251, 146, 60, 0.9)) 0 0 /
+        28px 2px no-repeat,
+      linear-gradient(rgba(251, 146, 60, 0.9), rgba(251, 146, 60, 0.9)) 0 0 /
+        2px 28px no-repeat,
+      linear-gradient(rgba(251, 146, 60, 0.9), rgba(251, 146, 60, 0.9)) 100% 0 /
+        28px 2px no-repeat,
+      linear-gradient(rgba(251, 146, 60, 0.9), rgba(251, 146, 60, 0.9)) 100% 0 /
+        2px 28px no-repeat,
+      linear-gradient(rgba(251, 146, 60, 0.9), rgba(251, 146, 60, 0.9)) 0 100% /
+        28px 2px no-repeat,
+      linear-gradient(rgba(251, 146, 60, 0.9), rgba(251, 146, 60, 0.9)) 0 100% /
+        2px 28px no-repeat,
+      linear-gradient(rgba(251, 146, 60, 0.9), rgba(251, 146, 60, 0.9)) 100% 100% /
+        28px 2px no-repeat,
+      linear-gradient(rgba(251, 146, 60, 0.9), rgba(251, 146, 60, 0.9)) 100% 100% /
+        2px 28px no-repeat;
   }
 }

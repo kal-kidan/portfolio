@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
-  DISK_DRIVE_RECT,
   INSERT_DELAY_MS,
   SCENE_ASPECT,
   SCENE_HEIGHT,
@@ -9,12 +8,13 @@ import {
   SCENE_WIDTH,
   type PortfolioDisk,
 } from '../../config/portfolio-os.config';
+import { DiskInsertSlot } from './DiskInsertSlot';
 import { DragBadge } from './DragBadge';
 import { ShelfZone } from './ShelfZone';
-import { rectToStyle } from './rectToStyle';
 import './portfolio-os.css';
 
-const IDLE_STATUS = '> Drag a floppy from the shelf into the drive slot…';
+const IDLE_STATUS =
+  '> Drag a floppy from the shelf into the insert slot…';
 
 function isOverlapping(ax: number, ay: number, b: DOMRect): boolean {
   // Point-in-rect — pointer coords vs drive bounding rect
@@ -49,10 +49,10 @@ export function PortfolioOsScene() {
   );
 
   const handleGrab = useCallback(
-    (disk: PortfolioDisk, pointerId: number) => {
+    (disk: PortfolioDisk, pointerId: number, x: number, y: number) => {
       if (inserting) return;
-      setDrag({ disk, pointerId, x: 0, y: 0 });
-      setStatus(`> Dragging ${disk.discLabel} — drop into the drive slot`);
+      setDrag({ disk, pointerId, x, y });
+      setStatus(`> Dragging ${disk.discLabel} — drop into the insert slot`);
     },
     [inserting],
   );
@@ -72,8 +72,9 @@ export function PortfolioOsScene() {
     const onUp = (e: PointerEvent) => {
       if (e.pointerId !== drag.pointerId) return;
       const driveRect = driveRef.current?.getBoundingClientRect();
-      const dropped =
-        driveRect ? isOverlapping(e.clientX, e.clientY, driveRect) : false;
+      const dropped = driveRect
+        ? isOverlapping(e.clientX, e.clientY, driveRect)
+        : false;
 
       setDrag(null);
       setDriveHover(false);
@@ -109,33 +110,29 @@ export function PortfolioOsScene() {
       <div
         ref={sceneRef}
         className={`portfolio-os-scene${inserting ? ' portfolio-os-scene--inserting' : ''}`}
-        style={{
-          aspectRatio: SCENE_ASPECT,
-          cursor: isDragging ? 'grabbing' : undefined,
-        }}
+        style={{ cursor: isDragging ? 'grabbing' : undefined }}
+        role="img"
+        aria-label="Kal's Portfolio OS — drag a floppy from the left shelf into the insert slot"
       >
-        <img
-          className="portfolio-os-scene__bg"
-          src={SCENE_IMAGE}
-          alt="Kal's Portfolio OS — drag a floppy from the left shelf into the drive slot"
-          width={SCENE_WIDTH}
-          height={SCENE_HEIGHT}
-          draggable={false}
-        />
+        <div className="portfolio-os-scene__stage" aria-hidden>
+          <img
+            className="portfolio-os-scene__bg"
+            src={SCENE_IMAGE}
+            alt=""
+            width={SCENE_WIDTH}
+            height={SCENE_HEIGHT}
+            draggable={false}
+          />
+          <div className="portfolio-os-scene__blend" />
+          <div className="portfolio-os-scene__edges" />
+          <div className="portfolio-os-scene__vignette" />
+        </div>
 
-        {/* Drive drop zone — visual feedback only */}
-        <div
+        <DiskInsertSlot
           ref={driveRef}
-          className={[
-            'portfolio-os-hotspot',
-            'portfolio-os-drop',
-            isDragging ? 'portfolio-os-drop--active' : '',
-            driveHover ? 'portfolio-os-drop--over' : '',
-          ]
-            .filter(Boolean)
-            .join(' ')}
-          style={rectToStyle(DISK_DRIVE_RECT)}
-          aria-hidden
+          isDragging={isDragging}
+          isOver={driveHover}
+          inserting={inserting}
         />
 
         {/* Shelf hit area — detects which disk was grabbed by pointer Y */}
@@ -147,9 +144,7 @@ export function PortfolioOsScene() {
       </div>
 
       {/* Floating badge that follows the cursor while dragging */}
-      {drag && drag.x !== 0 && (
-        <DragBadge disk={drag.disk} x={drag.x} y={drag.y} />
-      )}
+      {drag && <DragBadge disk={drag.disk} x={drag.x} y={drag.y} />}
 
       <p
         className={`portfolio-os-status${isDragging ? ' portfolio-os-status--active' : ''}`}
