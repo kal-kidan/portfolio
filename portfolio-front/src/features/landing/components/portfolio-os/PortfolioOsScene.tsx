@@ -8,6 +8,7 @@ import {
   SCENE_WIDTH,
   type PortfolioDisk,
 } from '../../config/portfolio-os.config';
+import { playPortfolioInteraction } from './ambientAudio';
 import { DiskInsertSlot } from './DiskInsertSlot';
 import { DragBadge } from './DragBadge';
 import { ShelfZone } from './ShelfZone';
@@ -32,6 +33,8 @@ export function PortfolioOsScene() {
   const navigate = useNavigate();
   const sceneRef = useRef<HTMLDivElement>(null);
   const driveRef = useRef<HTMLDivElement>(null);
+  const wasOverDriveRef = useRef(false);
+  const lastDragSfxRef = useRef(0);
 
   const [drag, setDrag] = useState<DragState | null>(null);
   const [driveHover, setDriveHover] = useState(false);
@@ -52,6 +55,8 @@ export function PortfolioOsScene() {
     (disk: PortfolioDisk, pointerId: number, x: number, y: number) => {
       if (inserting) return;
       setDrag({ disk, pointerId, x, y });
+      wasOverDriveRef.current = false;
+      playPortfolioInteraction('grab');
       setStatus(`> Dragging ${disk.discLabel} — drop into the insert slot`);
     },
     [inserting],
@@ -63,10 +68,22 @@ export function PortfolioOsScene() {
     const onMove = (e: PointerEvent) => {
       if (e.pointerId !== drag.pointerId) return;
       setDrag((d) => (d ? { ...d, x: e.clientX, y: e.clientY } : null));
+
+      const now = Date.now();
+      if (now - lastDragSfxRef.current > 85) {
+        playPortfolioInteraction('drag');
+        lastDragSfxRef.current = now;
+      }
+
       const driveRect = driveRef.current?.getBoundingClientRect();
-      setDriveHover(
-        driveRect ? isOverlapping(e.clientX, e.clientY, driveRect) : false,
-      );
+      const over = driveRect
+        ? isOverlapping(e.clientX, e.clientY, driveRect)
+        : false;
+      if (over && !wasOverDriveRef.current) {
+        playPortfolioInteraction('hover-drive');
+      }
+      wasOverDriveRef.current = over;
+      setDriveHover(over);
     };
 
     const onUp = (e: PointerEvent) => {
@@ -78,10 +95,13 @@ export function PortfolioOsScene() {
 
       setDrag(null);
       setDriveHover(false);
+      wasOverDriveRef.current = false;
 
       if (dropped) {
+        playPortfolioInteraction('drop');
         insertDisk(drag.disk);
       } else {
+        playPortfolioInteraction('release');
         setStatus(IDLE_STATUS);
       }
     };
@@ -90,6 +110,7 @@ export function PortfolioOsScene() {
       if (e.pointerId !== drag.pointerId) return;
       setDrag(null);
       setDriveHover(false);
+      wasOverDriveRef.current = false;
       setStatus(IDLE_STATUS);
     };
 

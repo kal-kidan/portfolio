@@ -1,10 +1,13 @@
 .portfolio-os-scene-wrap {
   position: relative;
+  flex: 1;
+  width: 100%;
+  min-height: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: center;
   gap: 0.35rem;
-  flex-shrink: 0;
   z-index: 0;
 }
 
@@ -48,24 +51,38 @@
 }
 
 .portfolio-os-page {
+  --scene-ar: 1672 / 941;
+  --scene-pad-x: 0.5rem;
+  --scene-pad-y: 0.5rem;
+  --scene-chrome: 4.5rem;
   min-height: 100dvh;
+  min-height: 100svh;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 0.5rem;
+  padding: var(--scene-pad-y) var(--scene-pad-x);
+  padding-top: max(var(--scene-pad-y), env(safe-area-inset-top));
+  padding-right: max(var(--scene-pad-x), env(safe-area-inset-right));
+  padding-bottom: max(var(--scene-pad-y), env(safe-area-inset-bottom));
+  padding-left: max(var(--scene-pad-x), env(safe-area-inset-left));
+  box-sizing: border-box;
 }
 
 .portfolio-os-scene {
   position: relative;
   z-index: 1;
-  width: min(calc(100vw - 1rem), calc((100dvh - 2rem) * 1672 / 941));
-  max-height: calc(100dvh - 2rem);
-  aspect-ratio: 1672 / 941;
+  width: min(
+    calc(100dvw - var(--scene-pad-x) * 2),
+    calc((100svh - var(--scene-chrome)) * 1672 / 941)
+  );
+  max-height: calc(100svh - var(--scene-chrome));
+  aspect-ratio: var(--scene-ar);
   user-select: none;
   overflow: hidden;
   background: var(--portfolio-bg-base);
   isolation: isolate;
+  flex-shrink: 0;
 }
 
 /* Art + unified grid overlay — one surface, not a floating card */
@@ -298,20 +315,168 @@
   filter: drop-shadow(0 8px 16px rgba(0, 0, 0, 0.55));
 }
 
+.portfolio-os-audio {
+  position: fixed;
+  right: clamp(0.5rem, 2vw, 1rem);
+  bottom: clamp(0.5rem, 2vh, 1rem);
+  z-index: 100;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.4rem 0.65rem;
+  border: 1px solid rgba(251, 146, 60, 0.45);
+  border-radius: 2px;
+  background: rgba(6, 3, 5, 0.88);
+  box-shadow: 0 0 10px rgba(251, 146, 60, 0.12);
+  font-family: ui-monospace, 'Courier New', monospace;
+  font-size: 0.62rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  color: rgba(251, 146, 60, 0.75);
+  cursor: pointer;
+  user-select: none;
+  transition:
+    border-color 0.15s ease,
+    color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.portfolio-os-audio:hover {
+  border-color: rgba(253, 224, 71, 0.65);
+  color: rgba(253, 224, 71, 0.95);
+  box-shadow: 0 0 14px rgba(251, 146, 60, 0.25);
+}
+
+.portfolio-os-audio--on {
+  border-color: rgba(253, 224, 71, 0.7);
+  color: rgba(253, 224, 71, 0.95);
+  box-shadow: 0 0 16px rgba(253, 224, 71, 0.2);
+}
+
+.portfolio-os-audio__led {
+  width: 0.45rem;
+  height: 0.45rem;
+  border-radius: 50%;
+  background: #7f1d1d;
+  box-shadow: 0 0 4px rgba(127, 29, 29, 0.8);
+  transition:
+    background-color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.portfolio-os-audio--on .portfolio-os-audio__led {
+  background: #dc2626;
+  box-shadow:
+    0 0 6px rgba(220, 38, 38, 0.9),
+    0 0 12px rgba(220, 38, 38, 0.45);
+}
+
+.portfolio-os-audio__label {
+  white-space: nowrap;
+}
+
 .portfolio-os-status {
   margin: 0;
   min-height: 1.1em;
+  max-width: 100%;
+  padding: 0 0.35rem;
   font-family: ui-monospace, 'Courier New', monospace;
   font-size: 0.72rem;
   font-weight: 400;
   color: rgba(134, 239, 172, 0.65);
-  white-space: nowrap;
   text-align: center;
   transition: color 0.12s ease;
+  flex-shrink: 0;
 }
 
 .portfolio-os-status--active {
   color: rgba(167, 243, 208, 0.95);
+}
+
+/* Tablets & phones — fit entire scene (shelves + insert bay); no scale crop */
+@media (max-width: 900px) {
+  .portfolio-os-page {
+    --scene-pad-x: 0.25rem;
+    --scene-pad-y: 0.25rem;
+    --scene-chrome: 3.75rem;
+    justify-content: center;
+    gap: 0.15rem;
+    min-height: 100svh;
+    overflow-x: hidden;
+  }
+
+  .portfolio-os-scene-wrap {
+    flex: 1;
+    width: 100%;
+    min-height: 0;
+    overflow: visible;
+    justify-content: center;
+  }
+
+  .portfolio-os-scene {
+    touch-action: none;
+    --avail-h: calc(100svh - var(--scene-chrome) - var(--scene-pad-y) * 2);
+    --avail-w: calc(100dvw - var(--scene-pad-x) * 2);
+    width: min(var(--avail-w), calc(var(--avail-h) * 1672 / 941));
+    max-width: var(--avail-w);
+    max-height: var(--avail-h);
+    height: auto;
+    aspect-ratio: 1672 / 941;
+    transform: none;
+  }
+
+  .portfolio-os-status {
+    font-size: clamp(0.58rem, 2.6vw, 0.68rem);
+    white-space: normal;
+    line-height: 1.3;
+    padding-bottom: 0.1rem;
+  }
+
+  .portfolio-os-drag-disc {
+    width: clamp(5rem, 22vw, 7.5rem);
+    filter: drop-shadow(0 5px 12px rgba(0, 0, 0, 0.5));
+  }
+
+  .portfolio-os-audio {
+    right: max(0.35rem, env(safe-area-inset-right));
+    bottom: max(0.35rem, env(safe-area-inset-bottom));
+    padding: 0.45rem 0.65rem;
+    font-size: 0.65rem;
+  }
+
+  .portfolio-os-insert__hint {
+    font-size: clamp(0.42rem, 2.2vw, 0.58rem);
+  }
+}
+
+@media (max-width: 480px) {
+  .portfolio-os-drag-disc {
+    width: clamp(4.75rem, 20vw, 7rem);
+  }
+}
+
+/* Phone landscape — width-constrained; fill height */
+@media (max-height: 520px) and (orientation: landscape) {
+  .portfolio-os-page {
+    --scene-chrome: 3.5rem;
+    --scene-pad-y: 0.2rem;
+    justify-content: center;
+  }
+
+  .portfolio-os-scene-wrap {
+    min-height: 0;
+  }
+
+  .portfolio-os-scene {
+    width: min(calc(100dvw - 0.5rem), calc((100svh - var(--scene-chrome)) * 1672 / 941));
+    max-height: calc(100svh - var(--scene-chrome));
+    transform: none;
+  }
+
+  .portfolio-os-status {
+    white-space: nowrap;
+    font-size: 0.62rem;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
