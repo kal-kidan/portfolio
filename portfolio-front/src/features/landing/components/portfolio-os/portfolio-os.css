@@ -50,11 +50,77 @@
     var(--portfolio-bg-base);
 }
 
+/* Home page: softer global wash so the scene art stays clear */
 .portfolio-os-page {
   --scene-ar: 1672 / 941;
   --scene-pad-x: 0.5rem;
   --scene-pad-y: 0.5rem;
   --scene-chrome: 4.5rem;
+  --portfolio-bg-layers:
+    radial-gradient(
+      ellipse 120% 100% at 50% 48%,
+      transparent 58%,
+      rgba(2, 1, 2, 0.22) 100%
+    ),
+    repeating-linear-gradient(
+      0deg,
+      transparent 0,
+      transparent 2px,
+      rgba(0, 0, 0, 0.08) 2px,
+      rgba(0, 0, 0, 0.08) 3px
+    ),
+    var(--portfolio-bg-noise),
+    radial-gradient(
+      circle at 1px 1px,
+      rgba(251, 146, 60, 0.1) 1px,
+      transparent 1px
+    ),
+    repeating-linear-gradient(
+      135deg,
+      transparent 0,
+      transparent 11px,
+      rgba(26, 12, 8, 0.14) 11px,
+      rgba(26, 12, 8, 0.14) 12px
+    ),
+    repeating-linear-gradient(
+      0deg,
+      transparent 0,
+      transparent 7px,
+      rgba(253, 224, 71, 0.05) 7px,
+      rgba(253, 224, 71, 0.05) 8px
+    ),
+    repeating-linear-gradient(
+      90deg,
+      transparent 0,
+      transparent 7px,
+      rgba(253, 224, 71, 0.05) 7px,
+      rgba(253, 224, 71, 0.05) 8px
+    ),
+    repeating-linear-gradient(
+      0deg,
+      transparent 0,
+      transparent 31px,
+      rgba(251, 146, 60, 0.09) 31px,
+      rgba(251, 146, 60, 0.09) 32px
+    ),
+    repeating-linear-gradient(
+      90deg,
+      transparent 0,
+      transparent 31px,
+      rgba(251, 146, 60, 0.09) 31px,
+      rgba(251, 146, 60, 0.09) 32px
+    ),
+    linear-gradient(
+      90deg,
+      color-mix(in srgb, var(--scene-edge-left) 70%, transparent) 0%,
+      transparent 28%
+    ),
+    linear-gradient(
+      270deg,
+      color-mix(in srgb, var(--scene-edge-right) 70%, transparent) 0%,
+      transparent 28%
+    ),
+    var(--portfolio-bg-base);
   min-height: 100dvh;
   min-height: 100svh;
   display: flex;
@@ -98,10 +164,10 @@
   height: 100%;
   object-fit: fill;
   pointer-events: none;
-  /* Darken bright interior; edge bleed layers handle border match */
-  filter: contrast(1.02) brightness(0.88) saturate(0.9);
+  filter: contrast(1.02) brightness(0.97) saturate(0.96);
 }
 
+/* Light grid texture — kept subtle so art stays readable */
 .portfolio-os-scene__blend {
   position: absolute;
   inset: 0;
@@ -110,9 +176,8 @@
   background-size: var(--portfolio-bg-scene-overlay-sizes);
   background-repeat: var(--portfolio-bg-scene-overlay-repeat);
   background-position: 0 0;
-  background-attachment: fixed;
-  opacity: 0.38;
-  mix-blend-mode: overlay;
+  opacity: 0.14;
+  mix-blend-mode: soft-light;
 }
 
 /* Per-side tint from sampled PNG edge pixels */
@@ -123,27 +188,27 @@
   background:
     linear-gradient(
       180deg,
-      color-mix(in srgb, var(--scene-edge-top) 95%, transparent) 0%,
-      color-mix(in srgb, var(--scene-edge-top) 45%, transparent) 7%,
-      transparent 16%
+      color-mix(in srgb, var(--scene-edge-top) 55%, transparent) 0%,
+      color-mix(in srgb, var(--scene-edge-top) 22%, transparent) 5%,
+      transparent 12%
     ),
     linear-gradient(
       0deg,
-      color-mix(in srgb, var(--scene-edge-bottom) 95%, transparent) 0%,
-      color-mix(in srgb, var(--scene-edge-bottom) 50%, transparent) 9%,
-      transparent 18%
+      color-mix(in srgb, var(--scene-edge-bottom) 55%, transparent) 0%,
+      color-mix(in srgb, var(--scene-edge-bottom) 25%, transparent) 6%,
+      transparent 14%
     ),
     linear-gradient(
       90deg,
-      color-mix(in srgb, var(--scene-edge-left) 80%, transparent) 0%,
-      color-mix(in srgb, var(--scene-edge-left) 30%, transparent) 6%,
-      transparent 14%
+      color-mix(in srgb, var(--scene-edge-left) 45%, transparent) 0%,
+      color-mix(in srgb, var(--scene-edge-left) 15%, transparent) 4%,
+      transparent 10%
     ),
     linear-gradient(
       270deg,
-      color-mix(in srgb, var(--scene-edge-right) 80%, transparent) 0%,
-      color-mix(in srgb, var(--scene-edge-right) 30%, transparent) 6%,
-      transparent 14%
+      color-mix(in srgb, var(--scene-edge-right) 45%, transparent) 0%,
+      color-mix(in srgb, var(--scene-edge-right) 15%, transparent) 4%,
+      transparent 10%
     );
 }
 
@@ -152,9 +217,9 @@
   inset: 0;
   pointer-events: none;
   background: radial-gradient(
-    ellipse 100% 98% at 50% 50%,
-    transparent 58%,
-    color-mix(in srgb, var(--scene-edge-top) 25%, transparent) 100%
+    ellipse 95% 90% at 50% 48%,
+    transparent 72%,
+    color-mix(in srgb, var(--scene-edge-top) 10%, transparent) 100%
   );
 }
 
@@ -165,10 +230,10 @@
 @keyframes portfolio-os-flicker {
   0%,
   100% {
-    filter: contrast(1.02) brightness(0.88) saturate(0.9);
+    filter: contrast(1.02) brightness(0.97) saturate(0.96);
   }
   50% {
-    filter: contrast(1.04) brightness(0.92) saturate(0.92);
+    filter: contrast(1.04) brightness(1) saturate(0.98);
   }
 }
 
@@ -319,7 +384,8 @@
   position: fixed;
   right: clamp(0.5rem, 2vw, 1rem);
   bottom: clamp(0.5rem, 2vh, 1rem);
-  z-index: 100;
+  z-index: 10000;
+  touch-action: manipulation;
   display: inline-flex;
   align-items: center;
   gap: 0.45rem;

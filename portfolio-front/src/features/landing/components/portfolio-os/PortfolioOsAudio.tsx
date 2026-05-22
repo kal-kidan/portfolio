@@ -13,35 +13,68 @@ function prefersReducedMotion(): boolean {
 
 export function PortfolioOsAudio() {
   const engineRef = useRef<PortfolioAmbientEngine | null>(null);
-  const [playing, setPlaying] = useState(false);
+  const beatOnRef = useRef(true);
+  const [beatOn, setBeatOn] = useState(true);
+
+  const tryStartBeat = useCallback(async () => {
+    const engine = engineRef.current;
+    if (!engine || !beatOnRef.current || engine.isRunning) return;
+    try {
+      await engine.start();
+    } catch {
+      /* autoplay policy — wait for gesture */
+    }
+  }, []);
 
   useEffect(() => {
     const engine = new PortfolioAmbientEngine();
     engineRef.current = engine;
     registerPortfolioAudioEngine(engine);
+    void tryStartBeat();
+
+    const onFirstInteract = (e: Event) => {
+      const target = e.target;
+      if (
+        target instanceof Element &&
+        target.closest('.portfolio-os-audio')
+      ) {
+        return;
+      }
+      void tryStartBeat();
+    };
+
+    window.addEventListener('pointerdown', onFirstInteract, {
+      capture: true,
+      passive: true,
+    });
+    window.addEventListener('keydown', onFirstInteract, { capture: true });
+
     return () => {
+      window.removeEventListener('pointerdown', onFirstInteract, {
+        capture: true,
+      });
+      window.removeEventListener('keydown', onFirstInteract, { capture: true });
       engine.dispose();
       engineRef.current = null;
       registerPortfolioAudioEngine(null);
     };
-  }, []);
+  }, [tryStartBeat]);
 
   const toggle = useCallback(async () => {
-    let engine = engineRef.current;
+    const engine = engineRef.current;
     if (!engine) return;
 
-    if (playing) {
-      engine.dispose();
-      const next = new PortfolioAmbientEngine();
-      engineRef.current = next;
-      registerPortfolioAudioEngine(next);
-      setPlaying(false);
+    const next = !beatOnRef.current;
+    beatOnRef.current = next;
+    setBeatOn(next);
+
+    if (!next) {
+      engine.stopMusic();
       return;
     }
 
-    await engine.start();
-    setPlaying(true);
-  }, [playing]);
+    await tryStartBeat();
+  }, [tryStartBeat]);
 
   if (prefersReducedMotion()) {
     return null;
@@ -52,19 +85,19 @@ export function PortfolioOsAudio() {
       type="button"
       className={[
         'portfolio-os-audio',
-        playing ? 'portfolio-os-audio--on' : '',
+        beatOn ? 'portfolio-os-audio--on' : '',
       ]
         .filter(Boolean)
         .join(' ')}
       onClick={() => void toggle()}
-      aria-pressed={playing}
+      aria-pressed={beatOn}
       aria-label={
-        playing ? 'Mute portfolio ambient audio' : 'Enable portfolio ambient audio'
+        beatOn ? 'Mute portfolio ambient audio' : 'Enable portfolio ambient audio'
       }
     >
       <span className="portfolio-os-audio__led" aria-hidden />
       <span className="portfolio-os-audio__label">
-        {playing ? 'BEAT: ON' : 'BEAT: OFF'}
+        {beatOn ? 'BEAT: ON' : 'BEAT: OFF'}
       </span>
     </button>
   );

@@ -84,6 +84,26 @@ export class PortfolioAmbientEngine {
     return ctx;
   }
 
+  /** Stop groove only — keeps context + SFX (BEAT off). */
+  stopMusic(): void {
+    if (this.stepTimer) {
+      clearInterval(this.stepTimer);
+      this.stepTimer = null;
+    }
+    for (const stop of this.stops) stop();
+    this.stops = [];
+    if (this.musicBus) {
+      try {
+        this.musicBus.disconnect();
+      } catch {
+        /* already disconnected */
+      }
+      this.musicBus = null;
+    }
+    this.musicActive = false;
+    this.step = 0;
+  }
+
   async start(): Promise<void> {
     const ctx = await this.ensureContext();
     if (!ctx || this.musicActive) return;
@@ -151,12 +171,7 @@ export class PortfolioAmbientEngine {
   }
 
   dispose(): void {
-    if (this.stepTimer) {
-      clearInterval(this.stepTimer);
-      this.stepTimer = null;
-    }
-    for (const stop of this.stops) stop();
-    this.stops = [];
+    this.stopMusic();
     void this.ctx?.close();
     this.ctx = null;
     this.master = null;
