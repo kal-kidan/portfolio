@@ -63,26 +63,65 @@
 .bio-page__image {
   position: absolute;
   inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  z-index: 1;
   width: 100%;
   height: 100%;
   margin: 0;
   padding: 0;
 }
 
-.bio-page__image .apartment-panorama__image {
-  display: block;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  object-position: center center;
+.bio-page__hud {
+  position: absolute;
+  z-index: 6;
+  left: max(0.55rem, env(safe-area-inset-left));
+  width: min(20rem, calc(100vw - 6.5rem));
+  pointer-events: none;
+}
+
+/* Tucked beside the character (left third of the scene) */
+.bio-page__hud--top {
+  top: clamp(4.5rem, 34vh, 38%);
+  left: clamp(33%, 35vw, 38%);
+  right: auto;
+  width: auto;
+  max-width: min(16.5rem, 48vw);
+  transform: translateY(-0.25rem);
+}
+
+.bio-page__hud--bottom {
+  bottom: max(3.1rem, calc(env(safe-area-inset-bottom) + 2.65rem));
+}
+
+/* Stagger cards in after page / disc-boot reveal */
+.bio-page__hud .hud-card {
+  opacity: 0;
+  transform: translateY(14px);
+  pointer-events: none;
+}
+
+.disc-boot-page--ready .bio-page__hud--top .hud-card {
+  animation: bio-hud-card-in 0.55s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  animation-delay: 0.4s;
+}
+
+.bio-page__hud--bottom.bio-page__hud--in .hud-card {
+  animation: bio-hud-card-in 0.65s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+@keyframes bio-hud-card-in {
+  from {
+    opacity: 0;
+    transform: translateY(14px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 
 .bio-page__chrome {
   position: absolute;
-  z-index: 4;
+  z-index: 7;
   top: 0;
   left: 0;
   right: 0;
@@ -148,7 +187,8 @@
   bottom: max(0.35rem, env(safe-area-inset-bottom));
   margin: 0 auto;
   padding: 0.2rem 0.5rem;
-  max-width: calc(100% - 7rem);
+  max-width: calc(100% - 8.5rem);
+  padding-right: 5.5rem;
   color: rgba(134, 239, 172, 0.7);
   text-shadow: 0 1px 6px rgba(0, 0, 0, 0.95);
   background: linear-gradient(
@@ -162,23 +202,34 @@
   z-index: 5;
 }
 
-.apartment-panorama {
-  display: block;
-  width: 100%;
-  height: 100%;
-  margin: 0;
-}
-
-.apartment-panorama__image {
-  user-select: none;
-  -webkit-user-drag: none;
+@media (prefers-reduced-motion: reduce) {
+  .bio-page__hud .hud-card {
+    opacity: 1;
+    transform: none;
+    animation: none !important;
+  }
 }
 
 @media (max-width: 900px) {
+  .bio-page__hud {
+    width: min(18rem, calc(100vw - 5.75rem));
+  }
+
+  .bio-page__hud--top {
+    top: clamp(4rem, 30vh, 34%);
+    left: clamp(31%, 33vw, 36%);
+    max-width: min(14.5rem, 52vw);
+  }
+
+  .bio-page__hud--bottom {
+    bottom: max(3rem, calc(env(safe-area-inset-bottom) + 2.5rem));
+  }
+
   .bio-page__status {
     font-size: 0.58rem;
     white-space: normal;
     line-height: 1.35;
-    max-width: calc(100% - 1.5rem);
+    max-width: calc(100% - 6rem);
+    padding-right: 4.75rem;
   }
 }
