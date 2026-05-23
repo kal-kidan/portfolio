@@ -1,17 +1,13 @@
 import { Link, useLocation } from 'react-router-dom';
 import {
-  PORTFOLIO_DISKS,
+  ROUTE_TO_DISK_ID,
   SECTION_META,
   type DiskId,
 } from '../config/portfolio-os.config';
 
-const ROUTE_TO_ID = Object.fromEntries(
-  PORTFOLIO_DISKS.map((d) => [d.route, d.id]),
-) as Record<string, DiskId>;
-
 export function SectionPage() {
   const { pathname } = useLocation();
-  const id = ROUTE_TO_ID[pathname];
+  const id = ROUTE_TO_DISK_ID[pathname];
   const meta = id ? SECTION_META[id] : null;
 
   if (!meta) {
@@ -25,7 +21,7 @@ export function SectionPage() {
 
   return (
     <main className="section-shell">
-      <p className="section-shell__boot">&gt; BOOTING {meta.discLabel}…</p>
+      <p className="section-shell__boot">&gt; {meta.discLabel} mounted</p>
       <h1 className="section-shell__title">{meta.title}</h1>
       <p className="section-shell__desc">{meta.description}</p>
       <p className="section-shell__hint">

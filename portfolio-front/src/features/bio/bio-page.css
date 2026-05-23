@@ -1,0 +1,184 @@
+/* Edge colors sampled from standing-in-an-apartment.png (12px strips per side) */
+.bio-page {
+  --bio-edge-top: #010000;
+  --bio-edge-bottom: #0c0300;
+  --bio-edge-left: #010000;
+  --bio-edge-right: #030100;
+  --bio-edge-base: #020000;
+
+  position: relative;
+  width: 100%;
+  min-height: 100dvh;
+  min-height: 100svh;
+  overflow: hidden;
+  background-color: var(--bio-edge-base);
+  color: #e9d5ff;
+  font-family: ui-monospace, 'Courier New', monospace;
+}
+
+/* Solid edge fills + soft inward fade so letterbox matches the photo */
+.bio-page__bleed {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(
+      90deg,
+      var(--bio-edge-left) 0%,
+      var(--bio-edge-left) 12%,
+      color-mix(in srgb, var(--bio-edge-left) 55%, var(--bio-edge-base)) 28%,
+      transparent 55%
+    ),
+    linear-gradient(
+      270deg,
+      var(--bio-edge-right) 0%,
+      var(--bio-edge-right) 12%,
+      color-mix(in srgb, var(--bio-edge-right) 55%, var(--bio-edge-base)) 28%,
+      transparent 55%
+    ),
+    linear-gradient(
+      180deg,
+      var(--bio-edge-top) 0%,
+      var(--bio-edge-top) 10%,
+      color-mix(in srgb, var(--bio-edge-top) 50%, var(--bio-edge-base)) 24%,
+      transparent 50%
+    ),
+    linear-gradient(
+      0deg,
+      var(--bio-edge-bottom) 0%,
+      var(--bio-edge-bottom) 10%,
+      color-mix(in srgb, var(--bio-edge-bottom) 50%, var(--bio-edge-base)) 24%,
+      transparent 50%
+    ),
+    var(--bio-edge-base);
+}
+
+.bio-page__viewport {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+}
+
+.bio-page__image {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+.bio-page__image .apartment-panorama__image {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center center;
+}
+
+.bio-page__chrome {
+  position: absolute;
+  z-index: 4;
+  top: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem 1rem;
+  padding: max(0.65rem, env(safe-area-inset-top))
+    max(0.75rem, env(safe-area-inset-right))
+    0.5rem max(0.75rem, env(safe-area-inset-left));
+  pointer-events: none;
+  background: linear-gradient(
+    180deg,
+    rgba(8, 5, 6, 0.72) 0%,
+    rgba(8, 5, 6, 0.2) 55%,
+    transparent 100%
+  );
+}
+
+.bio-page__chrome a,
+.bio-page__chrome p {
+  pointer-events: auto;
+}
+
+.bio-page__boot {
+  margin: 0;
+  font-size: clamp(0.58rem, 2.4vw, 0.72rem);
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  color: rgba(251, 146, 60, 0.8);
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.9);
+}
+
+.bio-page__back {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.35rem 0.55rem;
+  border: 1px solid rgba(103, 232, 249, 0.35);
+  border-radius: 2px;
+  background: rgba(8, 5, 6, 0.55);
+  font-size: clamp(0.62rem, 2.5vw, 0.75rem);
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  color: rgba(103, 232, 249, 0.95);
+  text-decoration: none;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.9);
+  transition:
+    border-color 0.15s ease,
+    color 0.15s ease;
+}
+
+.bio-page__back:hover {
+  border-color: rgba(253, 224, 71, 0.55);
+  color: rgba(253, 224, 71, 0.98);
+}
+
+.bio-page__status {
+  position: absolute;
+  z-index: 4;
+  left: 0;
+  right: 0;
+  bottom: max(0.35rem, env(safe-area-inset-bottom));
+  margin: 0 auto;
+  padding: 0.2rem 0.5rem;
+  max-width: calc(100% - 7rem);
+  color: rgba(134, 239, 172, 0.7);
+  text-shadow: 0 1px 6px rgba(0, 0, 0, 0.95);
+  background: linear-gradient(
+    0deg,
+    rgba(8, 5, 6, 0.65) 0%,
+    transparent 100%
+  );
+}
+
+.bio-page .portfolio-os-audio {
+  z-index: 5;
+}
+
+.apartment-panorama {
+  display: block;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+}
+
+.apartment-panorama__image {
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+@media (max-width: 900px) {
+  .bio-page__status {
+    font-size: 0.58rem;
+    white-space: normal;
+    line-height: 1.35;
+    max-width: calc(100% - 1.5rem);
+  }
+}

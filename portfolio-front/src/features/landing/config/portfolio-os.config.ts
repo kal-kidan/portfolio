@@ -289,6 +289,57 @@ export const PORTFOLIO_DISKS: PortfolioDisk[] = SHELF_DISK_ORDER.map(
   }),
 );
 
+/** Boot overlay on the destination page after a shelf insert */
+export const DISC_BOOT_LINE_MS = 380;
+export const DISC_BOOT_HOLD_MS = 320;
+export const DISC_BOOT_OVERLAY_FADE_MS = 480;
+export const DISC_BOOT_CONTENT_REVEAL_MS = 1400;
+
+export type DiscBootLocationState = {
+  discBoot: true;
+  diskId: DiskId;
+};
+
+export function isDiscBootNavigation(
+  state: unknown,
+): state is DiscBootLocationState {
+  return (
+    typeof state === 'object' &&
+    state !== null &&
+    (state as DiscBootLocationState).discBoot === true &&
+    typeof (state as DiscBootLocationState).diskId === 'string'
+  );
+}
+
+export const ROUTE_TO_DISK_ID = Object.fromEntries(
+  PORTFOLIO_DISKS.map((d) => [d.route, d.id]),
+) as Record<string, DiskId>;
+
+export function getDiskByRoute(pathname: string): PortfolioDisk | undefined {
+  const id = ROUTE_TO_DISK_ID[pathname];
+  return id ? PORTFOLIO_DISKS.find((d) => d.id === id) : undefined;
+}
+
+const DISC_BOOT_MODULES: Partial<Record<DiskId, string>> = {
+  bio: 'APARTMENT_VIEWER.EXE',
+};
+
+export function getDiscBootLines(diskId: DiskId): string[] {
+  const disk = PORTFOLIO_DISKS.find((d) => d.id === diskId);
+  if (!disk) {
+    return ['> BOOTING...', '> OK'];
+  }
+  const module =
+    DISC_BOOT_MODULES[diskId] ?? `${disk.screenLabel}_MODULE.EXE`;
+  return [
+    '> INSERT CONFIRMED',
+    `> READING ${disk.discLabel}...`,
+    '> VERIFYING CHECKSUM .......... OK',
+    `> LOADING ${module}`,
+    '> INITIALIZING DISPLAY... OK',
+  ];
+}
+
 /**
  * --------------------------------
  * MOTION COLLISION DETECTION

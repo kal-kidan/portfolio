@@ -9,6 +9,8 @@
   color: #e9d5ff;
   font-family: ui-monospace, 'Courier New', monospace;
   text-align: center;
+  position: relative;
+  z-index: 1;
 }
 
 .section-shell--error {

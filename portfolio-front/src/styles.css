@@ -182,6 +182,26 @@
 
   /* Legacy alias — gradient only (prefer --portfolio-bg-layers on surfaces) */
   --portfolio-bg: var(--portfolio-bg-base);
+
+  /* Content / image pages — no orange grid, soft depth only */
+  --page-bg-subtle:
+    radial-gradient(
+      ellipse 110% 90% at 50% 42%,
+      rgba(22, 10, 28, 0.55) 0%,
+      transparent 58%
+    ),
+    radial-gradient(
+      ellipse 70% 50% at 12% 88%,
+      rgba(30, 58, 95, 0.14) 0%,
+      transparent 52%
+    ),
+    radial-gradient(
+      ellipse 60% 45% at 88% 20%,
+      rgba(88, 28, 135, 0.1) 0%,
+      transparent 50%
+    ),
+    var(--portfolio-bg-noise),
+    var(--portfolio-bg-base);
 }
 
 @layer base {
@@ -194,13 +214,24 @@
   }
 
   html,
-  body,
-  .portfolio-os-page,
-  .section-shell {
+  body {
+    background-color: var(--portfolio-bg-top);
+  }
+
+  .portfolio-os-page {
     background-color: var(--portfolio-bg-top);
     background-image: var(--portfolio-bg-layers);
     background-size: var(--portfolio-bg-layer-sizes);
     background-repeat: var(--portfolio-bg-layer-repeat);
+    background-position: center;
+    background-attachment: fixed;
+  }
+
+  .section-shell {
+    background-color: var(--portfolio-bg-top);
+    background-image: var(--page-bg-subtle);
+    background-size: 100% 100%, 8px 8px, 100% 100%;
+    background-repeat: no-repeat, repeat, no-repeat;
     background-position: center;
     background-attachment: fixed;
   }
@@ -262,17 +293,29 @@
     opacity: 0.65;
   }
 
-  body:has(.portfolio-os-page)::before {
+  body:has(.portfolio-os-page):not(:has(.bio-page))::before {
     opacity: 0.32;
   }
 
+  body:has(.bio-page)::before,
+  body:has(.section-shell)::before {
+    content: none;
+  }
+
+  html:has(.bio-page),
+  body:has(.bio-page) {
+    background-color: #020000;
+    background-image: none;
+  }
+
   .portfolio-os-page,
+  .bio-page,
   .section-shell {
     position: relative;
     z-index: 1;
   }
 
-  /* HUD corner brackets on home */
+  /* HUD corner brackets — home only */
   .portfolio-os-page::before {
     content: '';
     position: fixed;

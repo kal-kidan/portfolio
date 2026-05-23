@@ -46,7 +46,13 @@ export function PortfolioOsScene() {
       if (inserting) return;
       setInserting(true);
       setStatus(`> Loading ${disk.discLabel}…`);
-      window.setTimeout(() => navigate(disk.route), INSERT_DELAY_MS);
+      window.setTimeout(
+        () =>
+          navigate(disk.route, {
+            state: { discBoot: true, diskId: disk.id },
+          }),
+        INSERT_DELAY_MS,
+      );
     },
     [inserting, navigate],
   );
