@@ -23,6 +23,24 @@ export const SCENE_WIDTH = 1672;
 export const SCENE_HEIGHT = 941;
 export const SCENE_ASPECT = SCENE_WIDTH / SCENE_HEIGHT;
 
+/** Fraction of scene art width shown on narrow viewports (from the left edge). */
+export const SCENE_MOBILE_VISIBLE_WIDTH_RATIO = 0.86;
+export const SCENE_MOBILE_VISIBLE_WIDTH_RATIO_PHONE = 0.84;
+
+export const SCENE_MOBILE_ASPECT =
+  (SCENE_WIDTH * SCENE_MOBILE_VISIBLE_WIDTH_RATIO) / SCENE_HEIGHT;
+
+export function getSceneVisibleWidthRatio(): number {
+  if (typeof window === 'undefined') return 1;
+  if (window.matchMedia('(max-width: 480px)').matches) {
+    return SCENE_MOBILE_VISIBLE_WIDTH_RATIO_PHONE;
+  }
+  if (window.matchMedia('(max-width: 900px)').matches) {
+    return SCENE_MOBILE_VISIBLE_WIDTH_RATIO;
+  }
+  return 1;
+}
+
 export const SCENE_IMAGE = sceneImage;
 
 export const INSERT_DELAY_MS = 450;
@@ -302,7 +320,8 @@ export function getHoveredDiskIndex(
    * Current responsive scale
    */
 
-  const scaleX = sceneRect.width / SCENE_WIDTH;
+  const visibleWidthRatio = getSceneVisibleWidthRatio();
+  const scaleX = sceneRect.width / (SCENE_WIDTH * visibleWidthRatio);
   const scaleY = sceneRect.height / SCENE_HEIGHT;
 
   /**

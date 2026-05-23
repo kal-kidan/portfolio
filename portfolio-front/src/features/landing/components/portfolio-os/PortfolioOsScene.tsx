@@ -135,33 +135,35 @@ export function PortfolioOsScene() {
         role="img"
         aria-label="Kal's Portfolio OS — drag a floppy from the left shelf into the insert slot"
       >
-        <div className="portfolio-os-scene__stage" aria-hidden>
-          <img
-            className="portfolio-os-scene__bg"
-            src={SCENE_IMAGE}
-            alt=""
-            width={SCENE_WIDTH}
-            height={SCENE_HEIGHT}
-            draggable={false}
+        <div className="portfolio-os-scene__canvas">
+          <div className="portfolio-os-scene__stage" aria-hidden>
+            <img
+              className="portfolio-os-scene__bg"
+              src={SCENE_IMAGE}
+              alt=""
+              width={SCENE_WIDTH}
+              height={SCENE_HEIGHT}
+              draggable={false}
+            />
+            <div className="portfolio-os-scene__blend" />
+            <div className="portfolio-os-scene__edges" />
+            <div className="portfolio-os-scene__vignette" />
+          </div>
+
+          <DiskInsertSlot
+            ref={driveRef}
+            isDragging={isDragging}
+            isOver={driveHover}
+            inserting={inserting}
           />
-          <div className="portfolio-os-scene__blend" />
-          <div className="portfolio-os-scene__edges" />
-          <div className="portfolio-os-scene__vignette" />
+
+          {/* Shelf hit area — detects which disk was grabbed by pointer Y */}
+          <ShelfZone
+            sceneRef={sceneRef}
+            disabled={inserting}
+            onGrab={handleGrab}
+          />
         </div>
-
-        <DiskInsertSlot
-          ref={driveRef}
-          isDragging={isDragging}
-          isOver={driveHover}
-          inserting={inserting}
-        />
-
-        {/* Shelf hit area — detects which disk was grabbed by pointer Y */}
-        <ShelfZone
-          sceneRef={sceneRef}
-          disabled={inserting}
-          onGrab={handleGrab}
-        />
       </div>
 
       {/* Floating badge that follows the cursor while dragging */}

@@ -151,6 +151,13 @@
   flex-shrink: 0;
 }
 
+/* Art + hotspots share one transform on small screens (keeps insert/shelf aligned) */
+.portfolio-os-scene__canvas {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+}
+
 /* Art + unified grid overlay — one surface, not a floating card */
 .portfolio-os-scene__stage {
   position: absolute;
@@ -459,12 +466,13 @@
   color: rgba(167, 243, 208, 0.95);
 }
 
-/* Tablets & phones — fit entire scene (shelves + insert bay); no scale crop */
+/* Tablets & phones — crop from left through monitor (matches mobile mock framing) */
 @media (max-width: 900px) {
   .portfolio-os-page {
     --scene-pad-x: 0.25rem;
     --scene-pad-y: 0.25rem;
     --scene-chrome: 3.75rem;
+    --scene-visible-width: 0.86;
     justify-content: center;
     gap: 0.15rem;
     min-height: 100svh;
@@ -477,17 +485,29 @@
     min-height: 0;
     overflow: visible;
     justify-content: center;
+    align-items: center;
   }
 
   .portfolio-os-scene {
     touch-action: none;
+    --scene-visible-width: 0.86;
     --avail-h: calc(100svh - var(--scene-chrome) - var(--scene-pad-y) * 2);
     --avail-w: calc(100dvw - var(--scene-pad-x) * 2);
-    width: min(var(--avail-w), calc(var(--avail-h) * 1672 / 941));
+    --scene-ar-crop: calc(1672 * var(--scene-visible-width) / 941);
+    width: min(var(--avail-w), calc(var(--avail-h) * var(--scene-ar-crop)));
     max-width: var(--avail-w);
     max-height: var(--avail-h);
     height: auto;
-    aspect-ratio: 1672 / 941;
+    aspect-ratio: calc(1672 * var(--scene-visible-width)) / 941;
+    transform: none;
+  }
+
+  .portfolio-os-scene__canvas {
+    inset: unset;
+    left: 0;
+    top: 0;
+    width: calc(100% / var(--scene-visible-width));
+    height: 100%;
     transform: none;
   }
 
@@ -516,6 +536,10 @@
 }
 
 @media (max-width: 480px) {
+  .portfolio-os-scene {
+    --scene-visible-width: 0.84;
+  }
+
   .portfolio-os-drag-disc {
     width: clamp(4.75rem, 20vw, 7rem);
   }
@@ -533,9 +557,27 @@
     min-height: 0;
   }
 
+  .portfolio-os-page {
+    --scene-visible-width: 0.86;
+  }
+
   .portfolio-os-scene {
-    width: min(calc(100dvw - 0.5rem), calc((100svh - var(--scene-chrome)) * 1672 / 941));
+    --scene-visible-width: 0.86;
+    --avail-h: calc(100svh - var(--scene-chrome) - var(--scene-pad-y) * 2);
+    --avail-w: calc(100dvw - 0.5rem);
+    --scene-ar-crop: calc(1672 * var(--scene-visible-width) / 941);
+    width: min(var(--avail-w), calc(var(--avail-h) * var(--scene-ar-crop)));
     max-height: calc(100svh - var(--scene-chrome));
+    aspect-ratio: calc(1672 * var(--scene-visible-width)) / 941;
+    transform: none;
+  }
+
+  .portfolio-os-scene__canvas {
+    inset: unset;
+    left: 0;
+    top: 0;
+    width: calc(100% / var(--scene-visible-width));
+    height: 100%;
     transform: none;
   }
 
