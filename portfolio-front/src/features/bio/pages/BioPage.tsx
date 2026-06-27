@@ -1,54 +1,28 @@
-import { useEffect, useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
-import {
-  DISC_BOOT_CONTENT_REVEAL_MS,
-  isDiscBootNavigation,
-} from '../../landing/config/portfolio-os.config';
+import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { PortfolioOsAudio } from '../../landing/components/portfolio-os/PortfolioOsAudio';
 import '../../landing/components/portfolio-os/portfolio-os.css';
 import { BioApartmentGame } from '../components/BioApartmentGame';
 import { HudGameCard } from '../components/HudGameCard';
-import {
-  BIO_INTRO,
-  BIO_INTRO_CARD_ANIM_MS,
-  BIO_INTRO_CARD_DELAY_MS,
-  BIO_INTRO_READ_MS,
-  BIO_TIP,
-} from '../config/bio-game.config';
+import { BIO_AIM_STATUS, BIO_INTRO, BIO_TIP } from '../config/bio-game.config';
 import '../bio-page.css';
 import '../hud-card.css';
 
-function prefersReducedMotion(): boolean {
-  return (
-    typeof window !== 'undefined' &&
-    window.matchMedia('(prefers-reduced-motion: reduce)').matches
-  );
-}
-
 export function BioPage() {
-  const { state } = useLocation();
-  const [status, setStatus] = useState(`> ${BIO_TIP}`);
+  const [status, setStatus] = useState('> Click the bow to begin');
+  const [showIntro, setShowIntro] = useState(true);
   const [showTipCard, setShowTipCard] = useState(false);
 
-  useEffect(() => {
-    if (prefersReducedMotion()) {
-      setShowTipCard(true);
-      return;
-    }
+  const handleBowClick = () => {
+    setShowTipCard(true);
+    setStatus('> Bow equipped — press Start shooting');
+  };
 
-    const bootReveal = isDiscBootNavigation(state)
-      ? DISC_BOOT_CONTENT_REVEAL_MS
-      : 0;
-
-    const delay =
-      bootReveal +
-      BIO_INTRO_CARD_DELAY_MS +
-      BIO_INTRO_CARD_ANIM_MS +
-      BIO_INTRO_READ_MS;
-
-    const id = window.setTimeout(() => setShowTipCard(true), delay);
-    return () => window.clearTimeout(id);
-  }, [state]);
+  const handleStartShooting = () => {
+    setShowIntro(false);
+    setShowTipCard(false);
+    setStatus('> Switching to combat cam…');
+  };
 
   return (
     <main className="bio-page">
@@ -57,15 +31,19 @@ export function BioPage() {
       <div className="bio-page__viewport">
         <BioApartmentGame
           className="bio-page__image"
-          onStatusChange={setStatus}
+          onBowClick={handleBowClick}
+          onStartShooting={handleStartShooting}
+          onAimReady={() => setStatus(`> ${BIO_AIM_STATUS}`)}
         />
       </div>
 
-      <div className="bio-page__hud bio-page__hud--top">
-        <HudGameCard showProgress={false} aria-label="About">
-          <p>{BIO_INTRO}</p>
-        </HudGameCard>
-      </div>
+      {showIntro && (
+        <div className="bio-page__hud bio-page__hud--top">
+          <HudGameCard showProgress={false} aria-label="About">
+            <p>{BIO_INTRO}</p>
+          </HudGameCard>
+        </div>
+      )}
 
       {showTipCard && (
         <div className="bio-page__hud bio-page__hud--bottom bio-page__hud--in">

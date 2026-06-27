@@ -6,8 +6,7 @@
   align-items: center;
   justify-content: center;
   padding: max(1rem, env(safe-area-inset-top))
-    max(1rem, env(safe-area-inset-right))
-    max(1rem, env(safe-area-inset-bottom))
+    max(1rem, env(safe-area-inset-right)) max(1rem, env(safe-area-inset-bottom))
     max(1rem, env(safe-area-inset-left));
   background: #020000;
   font-family: ui-monospace, 'Courier New', monospace;

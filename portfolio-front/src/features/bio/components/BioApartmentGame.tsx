@@ -1,194 +1,209 @@
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import apartmentImage from '@/assets/bio/standing-in-an-apartment.png';
+import aimingImage from '@/assets/bio/pointing-bow-to-the-white-board.png';
+import bowOverlayImage from '@/assets/bio/bow.png';
 import {
-  BIO_BOARD_FACTS,
+  BIO_BOW_OVERLAY,
   BIO_BOW_RECT,
-  BIO_WHITEBOARD_RECT,
+  BIO_CROW_TARGET,
+  BIO_SCENE_CUT_MS,
 } from '../config/bio-game.config';
 import '../bio-game.css';
 
 type BioApartmentGameProps = {
   className?: string;
-  onStatusChange?: (message: string) => void;
+  onBowClick?: () => void;
+  onStartShooting?: () => void;
+  onAimReady?: () => void;
 };
 
-type Shot = {
-  id: number;
-  x1: number;
-  y1: number;
-  x2: number;
-  y2: number;
-};
+type ScenePhase = 'apartment' | 'cutting' | 'aiming';
+
+function prefersReducedMotion(): boolean {
+  return (
+    typeof window !== 'undefined' &&
+    window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  );
+}
 
 export function BioApartmentGame({
   className = '',
-  onStatusChange,
+  onBowClick,
+  onStartShooting,
+  onAimReady,
 }: BioApartmentGameProps) {
-  const sceneRef = useRef<HTMLDivElement>(null);
-  const [bowReady, setBowReady] = useState(false);
-  const [factIndex, setFactIndex] = useState<number | null>(null);
-  const [shot, setShot] = useState<Shot | null>(null);
-  const shotId = useRef(0);
+  const [bowUsed, setBowUsed] = useState(false);
+  const [scenePhase, setScenePhase] = useState<ScenePhase>('apartment');
+  const cutTimerRef = useRef<number | null>(null);
 
-  const setStatus = useCallback(
-    (msg: string) => onStatusChange?.(msg),
-    [onStatusChange],
-  );
+  const isAiming = scenePhase === 'aiming';
+  const isCutting = scenePhase === 'cutting';
+  const showAimLayer = isCutting || isAiming;
 
-  const scenePoint = useCallback((clientX: number, clientY: number) => {
-    const el = sceneRef.current;
-    if (!el) return null;
-    const r = el.getBoundingClientRect();
-    return {
-      x: ((clientX - r.left) / r.width) * 100,
-      y: ((clientY - r.top) / r.height) * 100,
-      px: clientX - r.left,
-      py: clientY - r.top,
+  useEffect(() => {
+    return () => {
+      if (cutTimerRef.current !== null) {
+        window.clearTimeout(cutTimerRef.current);
+      }
     };
   }, []);
 
-  const inRect = (
-    p: { x: number; y: number },
-    rect: { x: number; y: number; w: number; h: number },
-  ) =>
-    p.x >= rect.x &&
-    p.x <= rect.x + rect.w &&
-    p.y >= rect.y &&
-    p.y <= rect.y + rect.h;
+  const handleBowClick = useCallback(() => {
+    if (bowUsed) return;
+    setBowUsed(true);
+    onBowClick?.();
+  }, [bowUsed, onBowClick]);
 
-  const bowCenter = {
-    x: BIO_BOW_RECT.x + BIO_BOW_RECT.w / 2,
-    y: BIO_BOW_RECT.y + BIO_BOW_RECT.h / 2,
-  };
+  const finishCut = useCallback(() => {
+    setScenePhase('aiming');
+    onAimReady?.();
+  }, [onAimReady]);
 
-  const fireAtBoard = useCallback(() => {
-    const board = BIO_WHITEBOARD_RECT;
-    const targetX = board.x + board.w / 2;
-    const targetY = board.y + board.h / 2;
-    const id = ++shotId.current;
-    setShot({
-      id,
-      x1: bowCenter.x,
-      y1: bowCenter.y,
-      x2: targetX,
-      y2: targetY,
-    });
-    window.setTimeout(() => setShot((s) => (s?.id === id ? null : s)), 520);
+  const handleStartShooting = useCallback(() => {
+    if (scenePhase !== 'apartment' || !bowUsed) return;
 
-    setFactIndex((i) => {
-      const next = i === null ? 0 : (i + 1) % BIO_BOARD_FACTS.length;
-      setStatus(`> Hit! ${BIO_BOARD_FACTS[next]}`);
-      return next;
-    });
-  }, [bowCenter.x, bowCenter.y, setStatus]);
+    onStartShooting?.();
 
-  const handleSceneClick = useCallback(
-    (e: React.MouseEvent<HTMLDivElement>) => {
-      const p = scenePoint(e.clientX, e.clientY);
-      if (!p) return;
+    if (prefersReducedMotion()) {
+      setScenePhase('aiming');
+      onAimReady?.();
+      return;
+    }
 
-      if (inRect(p, BIO_BOW_RECT)) {
-        setBowReady(true);
-        setStatus('> Bow ready — click the whiteboard to shoot');
-        return;
-      }
-
-      if (inRect(p, BIO_WHITEBOARD_RECT)) {
-        if (!bowReady) {
-          setStatus('> Grab the bow first, then shoot the whiteboard');
-          return;
-        }
-        fireAtBoard();
-        return;
-      }
-    },
-    [bowReady, fireAtBoard, scenePoint, setStatus],
-  );
+    setScenePhase('cutting');
+    cutTimerRef.current = window.setTimeout(finishCut, BIO_SCENE_CUT_MS);
+  }, [bowUsed, finishCut, onAimReady, onStartShooting, scenePhase]);
 
   return (
-    <div className={`bio-game ${className}`.trim()}>
+    <div
+      className={[
+        'bio-game',
+        isAiming && 'bio-game--aiming',
+        isCutting && 'bio-game--cutting',
+        className,
+      ]
+        .filter(Boolean)
+        .join(' ')}
+    >
       <div
-        ref={sceneRef}
-        className="bio-game__scene"
-        onClick={handleSceneClick}
+        className={[
+          'bio-game__scene',
+          isCutting && 'bio-game__scene--cut',
+        ]
+          .filter(Boolean)
+          .join(' ')}
         role="presentation"
       >
-        <img
-          src={apartmentImage}
-          alt="Kal in a cyberpunk apartment in Addis Ababa"
-          className="bio-game__image"
-          draggable={false}
-        />
-
-        <button
-          type="button"
-          className={`bio-game__hotspot bio-game__hotspot--bow${
-            bowReady ? ' bio-game__hotspot--ready' : ''
-          }`}
-          style={{
-            left: `${BIO_BOW_RECT.x}%`,
-            top: `${BIO_BOW_RECT.y}%`,
-            width: `${BIO_BOW_RECT.w}%`,
-            height: `${BIO_BOW_RECT.h}%`,
-          }}
-          aria-label="Bow — click to ready, then shoot the whiteboard"
-          onClick={(e) => {
-            e.stopPropagation();
-            setBowReady(true);
-            setStatus('> Bow ready — click the whiteboard to shoot');
-          }}
-        />
-
-        <button
-          type="button"
-          className={`bio-game__hotspot bio-game__hotspot--board${
-            factIndex !== null ? ' bio-game__hotspot--hit' : ''
-          }`}
-          style={{
-            left: `${BIO_WHITEBOARD_RECT.x}%`,
-            top: `${BIO_WHITEBOARD_RECT.y}%`,
-            width: `${BIO_WHITEBOARD_RECT.w}%`,
-            height: `${BIO_WHITEBOARD_RECT.h}%`,
-          }}
-          aria-label="Whiteboard — shoot to learn about Kal"
-          onClick={(e) => {
-            e.stopPropagation();
-            if (!bowReady) {
-              setStatus('> Grab the bow first, then shoot the whiteboard');
-              return;
-            }
-            fireAtBoard();
-          }}
-        />
-
-        {shot && (
-          <svg
-            className="bio-game__arrow"
-            viewBox="0 0 100 100"
-            preserveAspectRatio="none"
-            aria-hidden
-          >
-            <line
-              x1={shot.x1}
-              y1={shot.y1}
-              x2={shot.x2}
-              y2={shot.y2}
+        {showAimLayer && (
+          <>
+            <div
+              className="bio-game__aim-bleed bio-game__aim-bleed--left"
+              aria-hidden
             />
-          </svg>
+            <div
+              className="bio-game__aim-bleed bio-game__aim-bleed--right"
+              aria-hidden
+            />
+          </>
         )}
 
-        {factIndex !== null && (
-          <div
-            className="bio-game__board-note"
-            style={{
-              left: `${BIO_WHITEBOARD_RECT.x}%`,
-              top: `${BIO_WHITEBOARD_RECT.y}%`,
-              width: `${BIO_WHITEBOARD_RECT.w}%`,
-              height: `${BIO_WHITEBOARD_RECT.h}%`,
-            }}
-          >
-            <p>{BIO_BOARD_FACTS[factIndex]}</p>
+        {!isAiming && (
+          <img
+            src={apartmentImage}
+            alt="Kal in a cyberpunk apartment in Addis Ababa"
+            className="bio-game__image bio-game__image--base"
+            draggable={false}
+          />
+        )}
+
+        {showAimLayer && (
+          <div className="bio-game__aim-frame">
+            <img
+              src={aimingImage}
+              alt="Kal aiming a bow at the crowned lion tapestry"
+              className="bio-game__image bio-game__image--aim"
+              draggable={false}
+            />
+            <img
+              src={bowOverlayImage}
+              alt=""
+              className="bio-game__bow-overlay"
+              style={{
+                transformOrigin: `${BIO_BOW_OVERLAY.tailX}% ${BIO_BOW_OVERLAY.tailY}%`,
+                transform: `translate(${BIO_BOW_OVERLAY.anchorX - BIO_BOW_OVERLAY.tailX}%, ${BIO_BOW_OVERLAY.anchorY - BIO_BOW_OVERLAY.tailY}%) scale(${BIO_BOW_OVERLAY.scale}) rotate(${BIO_BOW_OVERLAY.rotate}deg)`,
+              }}
+              draggable={false}
+              aria-hidden
+            />
+            {isAiming && (
+              <div
+                className="bio-game__reticle"
+                style={{
+                  left: `${BIO_CROW_TARGET.x}%`,
+                  top: `${BIO_CROW_TARGET.y}%`,
+                }}
+                aria-hidden
+              />
+            )}
           </div>
+        )}
+
+        {isCutting && (
+          <div className="bio-game__cut" aria-hidden>
+            <div className="bio-game__cut-flash" />
+            <div className="bio-game__cut-scan" />
+            <div className="bio-game__cut-lines" />
+            <div className="bio-game__cut-vignette" />
+            <p className="bio-game__cut-tag">&gt; COMBAT CAM · ENGAGED</p>
+            <div className="bio-game__cut-bar">
+              <span className="bio-game__cut-bar-fill" />
+            </div>
+          </div>
+        )}
+
+        {!bowUsed && (
+          <div
+            className="bio-game__bow-tip"
+            style={{
+              left: `${BIO_BOW_RECT.x - 2}%`,
+              top: `${BIO_BOW_RECT.y + BIO_BOW_RECT.h * 0.15}%`,
+            }}
+            aria-hidden
+          >
+            <span className="bio-game__bow-tip-arrow">▸</span>
+            <span className="bio-game__bow-tip-label">Use bow</span>
+          </div>
+        )}
+
+        {scenePhase === 'apartment' && (
+          <button
+            type="button"
+            className={`bio-game__hotspot bio-game__hotspot--bow${
+              bowUsed ? ' bio-game__hotspot--ready' : ''
+            }`}
+            style={{
+              left: `${BIO_BOW_RECT.x}%`,
+              top: `${BIO_BOW_RECT.y}%`,
+              width: `${BIO_BOW_RECT.w}%`,
+              height: `${BIO_BOW_RECT.h}%`,
+            }}
+            aria-label="Bow — click to equip"
+            onClick={handleBowClick}
+          />
+        )}
+
+        {bowUsed && scenePhase === 'apartment' && (
+          <button
+            type="button"
+            className="bio-game__shoot-btn"
+            style={{
+              left: `${BIO_BOW_RECT.x + BIO_BOW_RECT.w / 2}%`,
+              top: `${BIO_BOW_RECT.y + BIO_BOW_RECT.h + 2}%`,
+            }}
+            onClick={handleStartShooting}
+          >
+            Start shooting
+          </button>
         )}
       </div>
     </div>

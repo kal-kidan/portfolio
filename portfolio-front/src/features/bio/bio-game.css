@@ -7,18 +7,523 @@
   position: absolute;
   inset: 0;
   overflow: hidden;
-  cursor: crosshair;
+  cursor: default;
+  container-type: size;
 }
 
 .bio-game__image {
   display: block;
   width: 100%;
   height: 100%;
-  object-fit: cover;
-  object-position: center center;
   user-select: none;
   -webkit-user-drag: none;
   pointer-events: none;
+}
+
+.bio-game__image--base {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  object-fit: cover;
+  object-position: center center;
+}
+
+.bio-game__aim-frame {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  z-index: 2;
+  width: min(100cqw, calc(100cqh * 3 / 2));
+  height: min(100cqh, calc(100cqw * 2 / 3));
+  transform: translate(-50%, -50%);
+  opacity: 0;
+}
+
+.bio-game__aim-frame .bio-game__image--aim {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  width: 100%;
+  height: 100%;
+  object-fit: fill;
+  object-position: center center;
+  opacity: 1;
+}
+
+.bio-game__bow-overlay {
+  position: absolute;
+  left: 0;
+  top: 0;
+  z-index: 2;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+.bio-game--aiming .bio-game__bow-overlay {
+  animation: bio-game-bow-overlay-in 0.45s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+@keyframes bio-game-bow-overlay-in {
+  from {
+    opacity: 0;
+    filter: brightness(1.35) drop-shadow(0 0 12px rgba(192, 132, 252, 0.5));
+  }
+  to {
+    opacity: 1;
+    filter: brightness(1) drop-shadow(0 0 0 transparent);
+  }
+}
+
+.bio-game--aiming .bio-game__aim-frame {
+  opacity: 1;
+}
+
+.bio-game__scene--cut .bio-game__aim-frame {
+  animation: bio-game-aim-in var(--bio-cut-ms, 1.4s) cubic-bezier(0.22, 1, 0.36, 1)
+    forwards;
+}
+
+.bio-game__reticle {
+  position: absolute;
+  z-index: 4;
+  width: clamp(1rem, 2.8vw, 1.6rem);
+  height: clamp(1rem, 2.8vw, 1.6rem);
+  transform: translate(-50%, -50%) scale(0.6);
+  border: 2px solid rgba(253, 224, 71, 0.92);
+  border-radius: 50%;
+  box-shadow:
+    0 0 14px rgba(253, 224, 71, 0.55),
+    inset 0 0 10px rgba(253, 224, 71, 0.12);
+  pointer-events: none;
+  opacity: 0;
+}
+
+.bio-game__reticle::before,
+.bio-game__reticle::after {
+  content: '';
+  position: absolute;
+  background: rgba(253, 224, 71, 0.8);
+}
+
+.bio-game__reticle::before {
+  left: 50%;
+  top: 18%;
+  width: 1px;
+  height: 64%;
+  transform: translateX(-50%);
+}
+
+.bio-game__reticle::after {
+  top: 50%;
+  left: 18%;
+  height: 1px;
+  width: 64%;
+  transform: translateY(-50%);
+}
+
+.bio-game--aiming .bio-game__reticle {
+  animation:
+    bio-game-reticle-in 0.55s cubic-bezier(0.22, 1, 0.36, 1) forwards,
+    bio-game-reticle-pulse 1.5s ease-in-out 0.55s infinite;
+}
+
+@keyframes bio-game-reticle-in {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.5);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+}
+
+@keyframes bio-game-reticle-pulse {
+  0%,
+  100% {
+    box-shadow:
+      0 0 14px rgba(253, 224, 71, 0.5),
+      inset 0 0 10px rgba(253, 224, 71, 0.1);
+  }
+  50% {
+    box-shadow:
+      0 0 22px rgba(253, 224, 71, 0.85),
+      inset 0 0 14px rgba(253, 224, 71, 0.2);
+  }
+}
+
+.bio-game__scene--cut .bio-game__image--base {
+  animation: bio-game-base-out var(--bio-cut-ms, 1.4s) cubic-bezier(0.4, 0, 0.2, 1)
+    forwards;
+}
+
+.bio-game--cutting .bio-game__aim-bleed {
+  animation: bio-game-bleed-in var(--bio-cut-ms, 1.4s) ease-out forwards;
+  opacity: 0;
+}
+
+.bio-game--aiming .bio-game__aim-bleed {
+  opacity: 1;
+}
+
+/* Scene cut overlay — scan, flash, HUD */
+.bio-game__cut {
+  position: absolute;
+  inset: 0;
+  z-index: 8;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.bio-game__cut-flash {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    ellipse 80% 60% at 50% 45%,
+    rgba(253, 224, 71, 0.45) 0%,
+    rgba(232, 121, 249, 0.2) 35%,
+    transparent 70%
+  );
+  opacity: 0;
+  animation: bio-game-cut-flash var(--bio-cut-ms, 1.4s) ease-out forwards;
+}
+
+.bio-game__cut-scan {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 3px;
+  top: -4%;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(103, 232, 249, 0.2) 15%,
+    rgba(253, 224, 71, 0.95) 50%,
+    rgba(232, 121, 249, 0.85) 85%,
+    transparent 100%
+  );
+  box-shadow:
+    0 0 20px rgba(253, 224, 71, 0.9),
+    0 0 40px rgba(232, 121, 249, 0.5);
+  animation: bio-game-cut-scan var(--bio-cut-ms, 1.4s) cubic-bezier(0.4, 0, 0.15, 1)
+    forwards;
+}
+
+.bio-game__cut-lines {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent 0,
+    transparent 2px,
+    rgba(0, 0, 0, 0.12) 2px,
+    rgba(0, 0, 0, 0.12) 4px
+  );
+  animation: bio-game-cut-lines var(--bio-cut-ms, 1.4s) ease-out forwards;
+}
+
+.bio-game__cut-vignette {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  background: radial-gradient(
+    ellipse 70% 65% at 50% 50%,
+    transparent 40%,
+    rgba(0, 0, 0, 0.55) 100%
+  );
+  animation: bio-game-cut-vignette var(--bio-cut-ms, 1.4s) ease-out forwards;
+}
+
+.bio-game__cut-tag {
+  position: absolute;
+  left: 50%;
+  top: 42%;
+  transform: translate(-50%, -50%);
+  margin: 0;
+  padding: 0.45rem 0.75rem;
+  border: 1px solid rgba(253, 224, 71, 0.55);
+  background: rgba(8, 5, 6, 0.82);
+  font-family: ui-monospace, 'Courier New', monospace;
+  font-size: clamp(0.58rem, 2vw, 0.72rem);
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  color: rgba(253, 224, 71, 0.98);
+  text-shadow: 0 0 12px rgba(253, 224, 71, 0.65);
+  white-space: nowrap;
+  opacity: 0;
+  animation: bio-game-cut-tag var(--bio-cut-ms, 1.4s) cubic-bezier(0.22, 1, 0.36, 1)
+    forwards;
+}
+
+.bio-game__cut-bar {
+  position: absolute;
+  left: 12%;
+  right: 12%;
+  bottom: 18%;
+  height: 4px;
+  border: 1px solid rgba(103, 232, 249, 0.35);
+  background: rgba(0, 0, 0, 0.45);
+  overflow: hidden;
+}
+
+.bio-game__cut-bar-fill {
+  display: block;
+  height: 100%;
+  width: 0;
+  background: linear-gradient(
+    90deg,
+    #c026d3 0%,
+    #e879f9 55%,
+    #fde047 100%
+  );
+  box-shadow: 0 0 10px rgba(232, 121, 249, 0.65);
+  animation: bio-game-cut-bar var(--bio-cut-ms, 1.4s) cubic-bezier(0.4, 0, 0.2, 1)
+    forwards;
+}
+
+@keyframes bio-game-base-out {
+  0% {
+    opacity: 1;
+    transform: scale(1);
+    filter: brightness(1) blur(0);
+  }
+  35% {
+    opacity: 0.85;
+    transform: scale(1.02);
+    filter: brightness(1.15) blur(0);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.06);
+    filter: brightness(0.6) blur(3px);
+  }
+}
+
+@keyframes bio-game-aim-in {
+  0% {
+    opacity: 0;
+    transform: scale(1.08);
+    filter: brightness(1.4) contrast(1.1) saturate(1.15);
+  }
+  25% {
+    opacity: 0.35;
+    filter: brightness(1.25) contrast(1.08) saturate(1.1);
+  }
+  55% {
+    opacity: 0.85;
+    transform: scale(1.01);
+    filter: brightness(1.05) contrast(1.02) saturate(1.02);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+    filter: brightness(1) contrast(1) saturate(1);
+  }
+}
+
+@keyframes bio-game-bleed-in {
+  0%,
+  45% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+@keyframes bio-game-cut-flash {
+  0% {
+    opacity: 0;
+  }
+  12% {
+    opacity: 1;
+  }
+  28% {
+    opacity: 0.15;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes bio-game-cut-scan {
+  0% {
+    top: -4%;
+    opacity: 0;
+  }
+  8% {
+    opacity: 1;
+  }
+  72% {
+    opacity: 1;
+  }
+  100% {
+    top: 104%;
+    opacity: 0;
+  }
+}
+
+@keyframes bio-game-cut-lines {
+  0%,
+  10% {
+    opacity: 0;
+  }
+  25%,
+  75% {
+    opacity: 0.35;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes bio-game-cut-vignette {
+  0%,
+  20% {
+    opacity: 0;
+  }
+  45%,
+  70% {
+    opacity: 0.7;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes bio-game-cut-tag {
+  0%,
+  18% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.92);
+  }
+  32%,
+  68% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+  85%,
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(1.02);
+  }
+}
+
+@keyframes bio-game-cut-bar {
+  0% {
+    width: 0;
+  }
+  100% {
+    width: 100%;
+  }
+}
+
+.bio-game--cutting,
+.bio-game__scene--cut {
+  --bio-cut-ms: 1.4s;
+}
+
+.bio-game--aiming {
+  --bio-aim-base: #000000;
+}
+
+.bio-game--aiming .bio-game__scene {
+  background: var(--bio-aim-base);
+}
+
+/*
+ * Edge fills sampled from pointing-bow-to-the-white-board.png
+ * Left: cols 0–8 in 12 vertical bands · Right: last 8 cols in 12 bands
+ */
+.bio-game__aim-bleed {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  z-index: 0;
+  width: min(52%, 28rem);
+  pointer-events: none;
+}
+
+.bio-game__aim-bleed--left {
+  left: 0;
+  background: linear-gradient(
+    180deg,
+    #000001 0%,
+    #000001 4.2%,
+    #010206 12.5%,
+    #03050b 20.8%,
+    #040811 29.2%,
+    #05070b 37.5%,
+    #030303 45.8%,
+    #06060a 54.2%,
+    #040304 62.5%,
+    #000000 70.8%,
+    #000000 79.2%,
+    #010101 87.5%,
+    #030202 95.8%,
+    #030202 100%
+  );
+  -webkit-mask-image: linear-gradient(
+    90deg,
+    #000 0%,
+    #000 22%,
+    rgba(0, 0, 0, 0.92) 36%,
+    rgba(0, 0, 0, 0.55) 52%,
+    rgba(0, 0, 0, 0.2) 66%,
+    transparent 82%
+  );
+  mask-image: linear-gradient(
+    90deg,
+    #000 0%,
+    #000 22%,
+    rgba(0, 0, 0, 0.92) 36%,
+    rgba(0, 0, 0, 0.55) 52%,
+    rgba(0, 0, 0, 0.2) 66%,
+    transparent 82%
+  );
+}
+
+.bio-game__aim-bleed--right {
+  right: 0;
+  background: linear-gradient(
+    180deg,
+    #020000 0%,
+    #020000 4.2%,
+    #050100 12.5%,
+    #010000 20.8%,
+    #090300 29.2%,
+    #070100 37.5%,
+    #030100 45.8%,
+    #020000 54.2%,
+    #050100 62.5%,
+    #050100 70.8%,
+    #010000 79.2%,
+    #020000 87.5%,
+    #000000 95.8%,
+    #000000 100%
+  );
+  -webkit-mask-image: linear-gradient(
+    270deg,
+    #000 0%,
+    #000 22%,
+    rgba(0, 0, 0, 0.92) 36%,
+    rgba(0, 0, 0, 0.55) 52%,
+    rgba(0, 0, 0, 0.2) 66%,
+    transparent 82%
+  );
+  mask-image: linear-gradient(
+    270deg,
+    #000 0%,
+    #000 22%,
+    rgba(0, 0, 0, 0.92) 36%,
+    rgba(0, 0, 0, 0.55) 52%,
+    rgba(0, 0, 0, 0.2) 66%,
+    transparent 82%
+  );
 }
 
 .bio-game__hotspot {
@@ -36,18 +541,100 @@
 }
 
 .bio-game__hotspot--bow:hover,
-.bio-game__hotspot--bow.bio-game__hotspot--ready {
+.bio-game__hotspot--bow.bio-game__hotspot--ready,
+.bio-game__hotspot--bow:focus-visible {
   border-color: rgba(253, 224, 71, 0.55);
   box-shadow: 0 0 16px rgba(253, 224, 71, 0.2);
 }
 
-.bio-game__hotspot--board:hover {
-  border-color: rgba(103, 232, 249, 0.5);
-  box-shadow: 0 0 14px rgba(103, 232, 249, 0.2);
+.bio-game__bow-tip {
+  position: absolute;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  gap: 0.2rem;
+  padding: 0.28rem 0.45rem;
+  border: 1px solid rgba(253, 224, 71, 0.55);
+  border-radius: 2px;
+  background: rgba(8, 5, 6, 0.82);
+  box-shadow:
+    0 0 12px rgba(253, 224, 71, 0.25),
+    inset 0 0 12px rgba(253, 224, 71, 0.06);
+  pointer-events: none;
+  animation: bio-game-bow-tip 1.8s ease-in-out infinite;
+  transform: translateX(-100%);
 }
 
-.bio-game__hotspot--board.bio-game__hotspot--hit {
-  border-color: rgba(134, 239, 172, 0.65);
+.bio-game__bow-tip-arrow {
+  font-size: clamp(0.55rem, 1.8vw, 0.68rem);
+  color: rgba(253, 224, 71, 0.95);
+  text-shadow: 0 0 8px rgba(253, 224, 71, 0.6);
+}
+
+.bio-game__bow-tip-label {
+  font-family: ui-monospace, 'Courier New', monospace;
+  font-size: clamp(0.48rem, 1.6vw, 0.58rem);
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: rgba(251, 146, 60, 0.9);
+  text-shadow: 0 0 8px rgba(251, 146, 60, 0.45);
+  white-space: nowrap;
+}
+
+@keyframes bio-game-bow-tip {
+  0%,
+  100% {
+    opacity: 0.75;
+    transform: translateX(-100%) translateY(0);
+  }
+  50% {
+    opacity: 1;
+    transform: translateX(-100%) translateY(-3px);
+  }
+}
+
+.bio-game__shoot-btn {
+  position: absolute;
+  z-index: 4;
+  margin: 0;
+  padding: 0.4rem 0.65rem;
+  border: 1px solid rgba(253, 224, 71, 0.65);
+  border-radius: 2px;
+  background: rgba(8, 5, 6, 0.9);
+  box-shadow:
+    0 0 14px rgba(253, 224, 71, 0.3),
+    inset 0 0 12px rgba(253, 224, 71, 0.08);
+  font-family: ui-monospace, 'Courier New', monospace;
+  font-size: clamp(0.52rem, 1.7vw, 0.62rem);
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(253, 224, 71, 0.98);
+  text-shadow: 0 0 10px rgba(253, 224, 71, 0.55);
+  cursor: pointer;
+  white-space: nowrap;
+  animation: bio-game-shoot-btn-in 0.35s ease-out;
+  transform: translateX(-50%);
+}
+
+.bio-game__shoot-btn:hover,
+.bio-game__shoot-btn:focus-visible {
+  border-color: rgba(251, 146, 60, 0.85);
+  color: rgba(251, 146, 60, 1);
+  box-shadow:
+    0 0 18px rgba(251, 146, 60, 0.4),
+    inset 0 0 14px rgba(251, 146, 60, 0.1);
+}
+
+@keyframes bio-game-shoot-btn-in {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
 }
 
 .bio-game__arrow {
@@ -121,7 +708,34 @@
 
 @media (prefers-reduced-motion: reduce) {
   .bio-game__arrow,
-  .bio-game__board-note {
+  .bio-game__board-note,
+  .bio-game__bow-tip,
+  .bio-game__shoot-btn,
+  .bio-game__scene--cut .bio-game__image--base,
+  .bio-game__scene--cut .bio-game__aim-frame,
+  .bio-game--cutting .bio-game__aim-bleed,
+  .bio-game__cut-flash,
+  .bio-game__cut-scan,
+  .bio-game__cut-lines,
+  .bio-game__cut-vignette,
+  .bio-game__cut-tag,
+  .bio-game__cut-bar-fill,
+  .bio-game__reticle,
+  .bio-game__bow-overlay {
     animation: none;
+  }
+
+  .bio-game__aim-frame {
+    opacity: 1;
+  }
+
+  .bio-game--aiming .bio-game__reticle {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+
+  .bio-game__bow-overlay {
+    opacity: 1;
+    filter: none;
   }
 }

@@ -14,6 +14,29 @@ export const BIO_INTRO_READ_MS = 3250;
 export const BIO_TIP =
   'Use the bow in the room to shoot the whiteboard and discover more about me.';
 
+/** Target on pointing-bow-to-the-white-board.png (% of image) — crowned lion emblem */
+export const BIO_CROW_TARGET = { x: 68.5, y: 23.5 };
+
+/**
+ * bow.png arrow on the aiming scene — tail at draw hand, tip toward the board.
+ * Percents are relative to the 1536×1024 aiming frame.
+ */
+export const BIO_BOW_OVERLAY = {
+  /** Draw hand — arrow nock / fletching end */
+  anchorX: 23,
+  anchorY: 38.5,
+  /** Tail position inside bow.png (sampled from asset) */
+  tailX: 9.57,
+  tailY: 62.6,
+  scale: 0.28,
+  rotate: 14,
+};
+
+export const BIO_AIM_STATUS = 'Aim at the crow';
+
+/** Apartment → combat cam scene transition */
+export const BIO_SCENE_CUT_MS = 1400;
+
 /** Revealed on the board, one per successful shot */
 export const BIO_BOARD_FACTS = [
   'Backend-first — APIs, data models, and reliable services.',

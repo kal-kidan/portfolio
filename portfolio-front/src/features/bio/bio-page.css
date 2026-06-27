@@ -54,6 +54,103 @@
     var(--bio-edge-base);
 }
 
+/* Match page backdrop to aiming image edge extension */
+.bio-page:has(.bio-game--aiming) {
+  --bio-edge-base: #000000;
+}
+
+.bio-page:has(.bio-game--aiming) .bio-page__bleed {
+  background: var(--bio-edge-base);
+}
+
+.bio-page:has(.bio-game--aiming) .bio-page__bleed::before,
+.bio-page:has(.bio-game--aiming) .bio-page__bleed::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: min(52%, 28rem);
+  pointer-events: none;
+}
+
+.bio-page:has(.bio-game--aiming) .bio-page__bleed::before {
+  left: 0;
+  background: linear-gradient(
+    180deg,
+    #000001 0%,
+    #000001 4.2%,
+    #010206 12.5%,
+    #03050b 20.8%,
+    #040811 29.2%,
+    #05070b 37.5%,
+    #030303 45.8%,
+    #06060a 54.2%,
+    #040304 62.5%,
+    #000000 70.8%,
+    #000000 79.2%,
+    #010101 87.5%,
+    #030202 95.8%,
+    #030202 100%
+  );
+  -webkit-mask-image: linear-gradient(
+    90deg,
+    #000 0%,
+    #000 22%,
+    rgba(0, 0, 0, 0.92) 36%,
+    rgba(0, 0, 0, 0.55) 52%,
+    rgba(0, 0, 0, 0.2) 66%,
+    transparent 82%
+  );
+  mask-image: linear-gradient(
+    90deg,
+    #000 0%,
+    #000 22%,
+    rgba(0, 0, 0, 0.92) 36%,
+    rgba(0, 0, 0, 0.55) 52%,
+    rgba(0, 0, 0, 0.2) 66%,
+    transparent 82%
+  );
+}
+
+.bio-page:has(.bio-game--aiming) .bio-page__bleed::after {
+  right: 0;
+  background: linear-gradient(
+    180deg,
+    #020000 0%,
+    #020000 4.2%,
+    #050100 12.5%,
+    #010000 20.8%,
+    #090300 29.2%,
+    #070100 37.5%,
+    #030100 45.8%,
+    #020000 54.2%,
+    #050100 62.5%,
+    #050100 70.8%,
+    #010000 79.2%,
+    #020000 87.5%,
+    #000000 95.8%,
+    #000000 100%
+  );
+  -webkit-mask-image: linear-gradient(
+    270deg,
+    #000 0%,
+    #000 22%,
+    rgba(0, 0, 0, 0.92) 36%,
+    rgba(0, 0, 0, 0.55) 52%,
+    rgba(0, 0, 0, 0.2) 66%,
+    transparent 82%
+  );
+  mask-image: linear-gradient(
+    270deg,
+    #000 0%,
+    #000 22%,
+    rgba(0, 0, 0, 0.92) 36%,
+    rgba(0, 0, 0, 0.55) 52%,
+    rgba(0, 0, 0, 0.2) 66%,
+    transparent 82%
+  );
+}
+
 .bio-page__viewport {
   position: absolute;
   inset: 0;

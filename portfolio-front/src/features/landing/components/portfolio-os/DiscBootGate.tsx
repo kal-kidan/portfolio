@@ -88,11 +88,14 @@ export function DiscBootGate({ children }: PropsWithChildren) {
       setOverlayFading(true);
       setPhase('fade');
     }, linesEnd + DISC_BOOT_HOLD_MS);
-    schedule(() => {
-      setOverlayVisible(false);
-      setContentReady(true);
-      setPhase('done');
-    }, linesEnd + DISC_BOOT_HOLD_MS + DISC_BOOT_OVERLAY_FADE_MS);
+    schedule(
+      () => {
+        setOverlayVisible(false);
+        setContentReady(true);
+        setPhase('done');
+      },
+      linesEnd + DISC_BOOT_HOLD_MS + DISC_BOOT_OVERLAY_FADE_MS,
+    );
 
     return () => {
       timersRef.current.forEach((id) => window.clearTimeout(id));

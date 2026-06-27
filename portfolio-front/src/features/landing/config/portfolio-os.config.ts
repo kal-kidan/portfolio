@@ -329,8 +329,7 @@ export function getDiscBootLines(diskId: DiskId): string[] {
   if (!disk) {
     return ['> BOOTING...', '> OK'];
   }
-  const module =
-    DISC_BOOT_MODULES[diskId] ?? `${disk.screenLabel}_MODULE.EXE`;
+  const module = DISC_BOOT_MODULES[diskId] ?? `${disk.screenLabel}_MODULE.EXE`;
   return [
     '> INSERT CONFIRMED',
     `> READING ${disk.discLabel}...`,
